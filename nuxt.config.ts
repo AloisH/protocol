@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     '@nuxtjs/sitemap',
     'nuxt-og-image',
+    '@vite-pwa/nuxt',
   ],
 
   // Auto-import components from nested feature directories
@@ -56,9 +57,10 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true },
-    '/legal/**': { prerender: true },
-    '/contact': { prerender: true },
+    // Disable prerendering - Protocol is fully client-side PWA
+    // '/': { prerender: true },
+    // '/legal/**': { prerender: true },
+    // '/contact': { prerender: true },
   },
 
   compatibilityDate: '2025-01-15',
@@ -70,10 +72,7 @@ export default defineNuxtConfig({
     experimental: {
       wasm: true,
     },
-    prerender: {
-      crawlLinks: true,
-      routes: ['/'],
-    },
+    prerender: false,
   },
 
   vite: {
@@ -156,5 +155,45 @@ export default defineNuxtConfig({
   },
   sitemap: {
     exclude: [],
+  },
+
+  pwa: {
+    manifest: {
+      name: 'Protocol',
+      short_name: 'Protocol',
+      description: 'Personal routine tracking PWA. Set up and monitor daily, weekly, monthly, or yearly protocols.',
+      theme_color: '#10b981',
+      background_color: '#000000',
+      display: 'standalone',
+      scope: '/',
+      start_url: '/',
+      icons: [
+        {
+          src: '/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: '/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: '/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
+      ],
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      navigateFallback: '/',
+      navigateFallbackDenylist: [/^\/api\//, /^\/__/],
+    },
+    strategies: 'injectManifest',
+    filename: 'sw.ts',
   },
 });
