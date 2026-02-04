@@ -55,12 +55,22 @@ export interface Settings {
   restDaySchedule?: string[];
 }
 
+// Simple daily completion tracking at protocol level
+export interface DailyCompletion {
+  id: string;
+  protocolId: string;
+  date: string; // YYYY-MM-DD format for easy querying
+  completedAt: Date;
+  notes?: string;
+}
+
 export class ProtocolDB extends Dexie {
   protocols!: Table<Protocol>;
   routines!: Table<Routine>;
   exercises!: Table<Exercise>;
   trackingLogs!: Table<TrackingLog>;
   settings!: Table<Settings>;
+  dailyCompletions!: Table<DailyCompletion>;
 
   constructor() {
     super('ProtocolDB');
@@ -70,6 +80,14 @@ export class ProtocolDB extends Dexie {
       exercises: '++id, routineId',
       trackingLogs: '++id, exerciseId, [exerciseId+date]',
       settings: '++userId',
+    });
+    this.version(2).stores({
+      protocols: '++id, status, createdAt',
+      routines: '++id, protocolId, order',
+      exercises: '++id, routineId',
+      trackingLogs: '++id, exerciseId, [exerciseId+date]',
+      settings: '++userId',
+      dailyCompletions: '++id, protocolId, date, [protocolId+date]',
     });
   }
 }

@@ -1,20 +1,183 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Dashboard - Protocol',
-  description: 'Track your protocols and monitor daily, weekly, monthly, or yearly routines locally.',
+  title: 'Today - Protocol',
+  description: 'Track your daily protocols and monitor progress.',
 });
 
-onMounted(() => {
-  navigateTo('/protocols');
+const { todaysProtocols, loading, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
+const streaks = ref<Record<string, number>>({});
+
+onMounted(async () => {
+  await loadToday();
+  // Load streaks for all protocols
+  for (const protocol of todaysProtocols.value) {
+    streaks.value[protocol.id] = await getStreak(protocol.id);
+  }
+});
+
+// Reload streaks when completions change
+watch(() => todaysProtocols.value, async () => {
+  for (const protocol of todaysProtocols.value) {
+    streaks.value[protocol.id] = await getStreak(protocol.id);
+  }
+});
+
+async function handleToggle(protocolId: string) {
+  await toggleCompletion(protocolId);
+  // Update streak
+  streaks.value[protocolId] = await getStreak(protocolId);
+}
+
+const formattedDate = computed(() => {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 });
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen">
-    <div class="text-center">
-      <p class="text-gray-600">
-        Loading protocols...
+  <div class="space-y-8">
+    <!-- Header -->
+    <div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        {{ formattedDate }}
       </p>
+      <h1 class="text-3xl font-bold mt-1">
+        Today's Protocols
+      </h1>
+    </div>
+
+    <!-- Progress Card -->
+    <UCard>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Daily Progress
+          </p>
+          <p class="text-2xl font-bold mt-1">
+            {{ progress.completed }} / {{ progress.total }}
+          </p>
+        </div>
+        <div class="relative w-16 h-16">
+          <svg class="w-16 h-16 transform -rotate-90">
+            <circle
+              cx="32"
+              cy="32"
+              r="28"
+              stroke="currentColor"
+              stroke-width="8"
+              fill="none"
+              class="text-gray-200 dark:text-gray-700"
+            />
+            <circle
+              cx="32"
+              cy="32"
+              r="28"
+              stroke="currentColor"
+              stroke-width="8"
+              fill="none"
+              class="text-primary"
+              :stroke-dasharray="`${progress.percentage * 1.76} 176`"
+            />
+          </svg>
+          <span class="absolute inset-0 flex items-center justify-center text-sm font-semibold">
+            {{ progress.percentage }}%
+          </span>
+        </div>
+      </div>
+    </UCard>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="space-y-4">
+      <USkeleton v-for="i in 3" :key="i" class="h-24 rounded-lg" />
+    </div>
+
+    <!-- Empty State -->
+    <UCard v-else-if="todaysProtocols.length === 0" class="text-center py-12">
+      <UIcon name="i-lucide-calendar-check" class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        Nothing scheduled for today
+      </h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">
+        Create a daily protocol to get started
+      </p>
+      <UButton to="/protocols" icon="i-lucide-plus">
+        Create Protocol
+      </UButton>
+    </UCard>
+
+    <!-- Protocol List -->
+    <div v-else class="space-y-3">
+      <div
+        v-for="protocol in todaysProtocols"
+        :key="protocol.id"
+        class="group"
+      >
+        <UCard
+          class="transition-all cursor-pointer" :class="[
+            isCompletedToday(protocol.id)
+              ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
+              : 'hover:border-gray-300 dark:hover:border-gray-600',
+          ]"
+          @click="handleToggle(protocol.id)"
+        >
+          <div class="flex items-center gap-4">
+            <!-- Checkbox -->
+            <div
+              class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all" :class="[
+                isCompletedToday(protocol.id)
+                  ? 'bg-primary border-primary text-white'
+                  : 'border-gray-300 dark:border-gray-600 group-hover:border-primary',
+              ]"
+            >
+              <UIcon
+                v-if="isCompletedToday(protocol.id)"
+                name="i-lucide-check"
+                class="w-5 h-5"
+              />
+            </div>
+
+            <!-- Protocol Info -->
+            <div class="flex-1 min-w-0">
+              <h3
+                class="font-semibold truncate" :class="[
+                  isCompletedToday(protocol.id) && 'line-through text-gray-500 dark:text-gray-400',
+                ]"
+              >
+                {{ protocol.name }}
+              </h3>
+              <p v-if="protocol.description" class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                {{ protocol.description }}
+              </p>
+            </div>
+
+            <!-- Streak Badge -->
+            <div v-if="streaks[protocol.id] > 0" class="flex-shrink-0">
+              <UBadge color="warning" variant="soft" class="gap-1">
+                <UIcon name="i-lucide-flame" class="w-3 h-3" />
+                {{ streaks[protocol.id] }}
+              </UBadge>
+            </div>
+
+            <!-- Duration Badge -->
+            <UBadge color="gray" variant="soft" class="flex-shrink-0 capitalize">
+              {{ protocol.duration }}
+            </UBadge>
+          </div>
+        </UCard>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-3 pt-4">
+      <UButton to="/protocols" variant="outline" icon="i-lucide-list">
+        All Protocols
+      </UButton>
+      <UButton to="/analytics" variant="outline" icon="i-lucide-chart-line">
+        Analytics
+      </UButton>
     </div>
   </div>
 </template>
