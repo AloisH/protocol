@@ -1,22 +1,45 @@
-# Server Layer - API/DB Patterns
+# Server Context
 
-**Context:** API endpoints, database, validation, auth
-**For:** Full server/ context when needed
+**Not applicable for Protocol** - This is a client-only PWA with no server.
 
-> See [/CLAUDE.md](/CLAUDE.md) for project overview
-> See [/app/CLAUDE.md](/app/CLAUDE.md) for Vue/Nuxt patterns
+## Architecture
 
----
+Protocol is a **local-first Progressive Web App**:
 
-## Tech Stack
+- All code is client-side (Nuxt pages, components, composables)
+- All data is stored in IndexedDB via Dexie.js (in browser)
+- No server APIs needed
+- No authentication required
+- No database (centralized) needed
+- No server migrations needed
 
-**Runtime:** H3 event handlers (Nitro)
-**DB:** Prisma 7 + PostgreSQL (dev + prod)
-**Auth:** Better Auth (email/password + OAuth: GitHub, Google)
-**Validation:** Zod schemas in shared/schemas/
-**Architecture:** API routes → Features (service + repository) → Prisma
+## For Now
 
----
+All data management is in:
+
+- `app/composables/` — Business logic (useProtocols, useTracking, etc)
+- `shared/db/schema.ts` — Dexie.js schema definition
+- Browser IndexedDB — Client-side storage
+
+See [app/CLAUDE.md](../app/CLAUDE.md) for client-side patterns.
+
+## If You Add Backend Features Later
+
+If Protocol is extended to support:
+
+- Cloud sync
+- User accounts / authentication
+- Multiplayer features
+- Data export/import to cloud
+- Analytics/reporting
+
+Then create API routes in `/server` following Nitro patterns:
+
+- `/server/api/v1/*` for endpoints
+- `/server/utils/` for helpers
+- `/server/middleware/` for guards
+
+Docs: https://nitro.unjs.io
 
 ## Core Principles
 

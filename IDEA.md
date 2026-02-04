@@ -47,14 +47,14 @@ Protocol is a **free, open-source Nuxt 4 PWA** for tracking daily, weekly, month
 
 ## 3) Differentiation
 
-| Aspect        | Protocol                | Competitors                      |
-| ------------- | ----------------------- | -------------------------------- |
-| **Model**     | **Local-first PWA**     | Cloud SaaS (Fitbod, Hevy, etc)  |
-| **Price**     | **Free**                | $10-30/month                     |
-| **Data**      | **Your device only**    | Cloud servers (privacy concerns) |
-| **Offline**   | **✓ Full support**      | Limited/requires internet        |
-| **Stack**     | **Nuxt 4 + Dexie**      | React + various backends        |
-| **License**   | **MIT**                 | Proprietary/SaaS                |
+| Aspect      | Protocol             | Competitors                      |
+| ----------- | -------------------- | -------------------------------- |
+| **Model**   | **Local-first PWA**  | Cloud SaaS (Fitbod, Hevy, etc)   |
+| **Price**   | **Free**             | $10-30/month                     |
+| **Data**    | **Your device only** | Cloud servers (privacy concerns) |
+| **Offline** | **✓ Full support**   | Limited/requires internet        |
+| **Stack**   | **Nuxt 4 + Dexie**   | React + various backends         |
+| **License** | **MIT**              | Proprietary/SaaS                 |
 
 **Protocol's Unique Value:**
 
@@ -212,6 +212,7 @@ Dexie schema definition in `shared/db/schema.ts`
 No server APIs. All operations use Dexie.js composables:
 
 **Protocol Management:**
+
 - `createProtocol(name, description, duration)` → Protocol
 - `updateProtocol(id, updates)` → Protocol
 - `deleteProtocol(id)` → void
@@ -219,17 +220,20 @@ No server APIs. All operations use Dexie.js composables:
 - `listProtocols()` → Protocol[]
 
 **Routine Management:**
+
 - `addRoutine(protocolId, name)` → Routine
 - `updateRoutine(id, updates)` → Routine
 - `deleteRoutine(id)` → void
 - `reorderRoutines(protocolId, order[])` → void
 
 **Tracking:**
+
 - `logExercise(exerciseId, date, completion)` → TrackingLog
 - `getProgressForExercise(exerciseId, days)` → TrackingLog[]
 - `calculateMetrics(protocolId, timeRange)` → Metrics
 
 **Analytics:**
+
 - `getCompletionRate(protocolId, days)` → percentage
 - `getImprovement(exerciseId, metric)` → delta
 - `exportData()` → JSON
@@ -241,6 +245,7 @@ All operations stored in IndexedDB, available offline.
 ## 8) Dev environment & setup
 
 **Bootstrap:**
+
 ```bash
 git clone https://github.com/alois/protocol
 cd protocol
@@ -348,72 +353,65 @@ bun run build
 
 ---
 
-## 11) CI/CD
+## 11) CI/CD & Deployment
 
-**GitHub Actions workflows** (included in `.github/workflows/`):
+**GitHub Actions workflows** (`.github/workflows/`):
 
-- `ci.yml` — Lint, typecheck, unit tests on all PRs
-- `e2e.yml` — Playwright e2e tests on main branch
-- `deploy.yml` — Deploy to Vercel on merge to `main` (auto-configured)
-- `security.yml` — Dependency scanning with Dependabot
-- `release.yml` — Automated releases with semantic versioning
+- `ci.yml` — Lint, typecheck, unit tests on PRs
+- `e2e.yml` — Playwright tests on main
+- `deploy.yml` — Auto-deploy to Vercel on merge to main
+- `security.yml` — Dependency scanning (Dependabot)
 
-**Deployment:**
+**Deployment (static hosting):**
 
-- **Docker:** Multi-stage Dockerfile with Bun (primary method)
-- **Docker Compose:** Production-ready compose file included
-- **Alternative:** Vercel, Railway, Fly.io (configs provided)
+- **Vercel** (recommended) — One-click from git repo
+- **Netlify** — Similar one-click setup
+- **GitHub Pages** — Free, GitHub-native
+- **Any static host** — Just serve dist/ folder
 
-Secrets managed via environment variables and GitHub Actions secrets.
-
----
-
-## 12) Background jobs + AI orchestration
-
-- Use BullMQ + Redis for job queueing
-- Workers process: AI generation, PDF/ZIP exports, image post-processing, rate-limited calls to OpenAI
-- Job metadata persisted to `AIJob` table. Results written to S3 and referenced in DB.
-
-**Cost control**: set per-org monthly budget & soft quota enforced by AI Orchestrator.
+No server infrastructure needed.
 
 ---
 
-## 13) Security checklist
+## 12) Data export & backup
 
-- HTTPS enforced at edge
-- Strong CSP and cookie settings (HttpOnly, Secure, SameSite)
-- Rate limiting at API gateway and per-user
-- Input validation using Zod on both frontend and backend
-- Audit logs for billing changes and admin actions
-- Monthly dependency vulnerability scans (Dependabot)
+- **Export:** JSON format for all protocols, routines, tracking logs
+- **Import:** Restore from exported JSON
+- **Backup:** Browser auto-backs up IndexedDB (user can export manually)
+- **No sync** — Data stays local to device (optional: user can implement cloud sync via external service)
 
 ---
 
-## 14) Observability (optional, easy to add)
+## 13) Security & Privacy
 
-**Error Tracking:**
+- **No server** — No data transmission, user privacy guaranteed
+- **No tracking** — No analytics, ads, or external requests
+- **Offline-first** — Works completely offline, no internet needed
+- **Input validation** — Zod schemas validate all user input
+- **CSP headers** — Strong Content Security Policy
+- **Dependency scanning** — Dependabot for vulnerability checks
 
-- Sentry integration (optional) — pre-configured, just add DSN
-- Source maps for production debugging
+---
 
-**Logging:**
+## 14) Error Handling & Debugging
 
-- Structured JSON logs (console in dev, file in prod)
-- Pino or Winston for performance
-- Integration guides for BetterStack, Axiom, Logflare
+**Error handling:**
 
-**Analytics (privacy-friendly):**
+- Try-catch with user-friendly messages
+- Console logging in development
+- Graceful degradation (no server errors possible)
 
-- Plausible or Umami pre-configured (cookieless)
-- Custom event tracking for key actions
+**Debugging:**
 
-**Performance Monitoring:**
+- Vue DevTools for component inspection
+- Dexie DevTools for IndexedDB inspection
+- Browser DevTools for network/storage
 
-- Vercel Analytics (built-in on Vercel)
-- Web Vitals tracking included
-- API response time middleware
+**Analytics (optional):**
 
-**Note:** All observability is optional and modular — remove what you don't need.
+- No tracking by default (privacy-first)
+- Optional: add Plausible (cookieless) if desired
+- No external data transmission
 
 ---
 
@@ -434,24 +432,23 @@ Secrets managed via environment variables and GitHub Actions secrets.
 
 ---
 
-## 16) Example apps & templates (like supersaas)
+## 16) Example protocols & use cases
 
-Bistro includes 5+ fully-functional example apps demonstrating best practices:
+App includes example protocols demonstrating features:
 
-1. **AI Blog Generator** — Generate SEO-optimized blog posts with AI
-2. **Ad Creative Studio** — Create ad copy + images for multiple platforms
-3. **Landing Page Builder** — AI-assisted landing page creation with Tiptap
-4. **Email Funnel Designer** — Multi-step email sequence builder
-5. **Brand Package Creator** — Logo, colors, typography suggestions via AI
-6. **Product Idea Validator** — Market research + competitive analysis tool
+1. **Neck Training** — Exercise routine with sets/reps tracking, weekly schedule, improvement chart
+2. **Running Program** — Weekly mileage goals, pace tracking, monthly progress
+3. **Meditation Habit** — Daily tracking, streak counter, mood correlation
+4. **Strength Training** — Exercise library, weight progression, body measurements
+5. **Yoga Routine** — Daily poses, flexibility tracking, hold time improvements
 
-Each example includes:
+Each includes:
 
-- Complete UI implementation
-- API routes
-- Database schema
-- AI prompt templates
-- Tests
+- Complete routine setup
+- Exercise library (with variations)
+- Tracking interface
+- Progress analytics/charts
+- Export functionality
 
 ---
 
@@ -503,135 +500,126 @@ Each example includes:
 
 ---
 
-## 19) Roadmap (90-day MVP)
+## 19) Roadmap (60-day MVP)
 
-**Month 1: Foundation & Infrastructure**
+**Month 1: Core Features**
 
-- [ ] Monorepo setup (bun workspaces, turborepo)
-- [ ] Starter kit app (apps/web): Nuxt 4 + TypeScript + Tailwind 4
+- [ ] Nuxt 4 + Dexie.js setup
+- [ ] Protocol CRUD (create, edit, delete, list)
+- [ ] Routine management (add, reorder, daily/weekly scheduling)
+- [ ] Exercise library with sets/reps/weight tracking
+- [ ] Basic tracking interface (checkbox logging)
 - [ ] Nuxt UI component library integration
-- [ ] Prisma + PostgreSQL + migrations
-- [ ] Better Auth integration (email, OAuth, 2FA)
-- [ ] Docker Compose dev environment
-- [ ] IDE configs: VSCode, Zed, devcontainer
-- [ ] AI assistant rules: .cursorrules, .claude/, copilot
-- [ ] Pre-commit hooks (Husky + lint-staged)
-- [ ] Landing page (apps/landing): Nuxt Content
-- [ ] CLI package (packages/cli): Project scaffolding
+- [ ] VSCode + IDE configs
 - [ ] GitHub Actions CI
+- [ ] Unit tests (Vitest)
 
-**Month 2: Core AI Features**
+**Month 2: Analytics & UX**
 
-- [ ] Vercel AI SDK integration (OpenAI, Anthropic)
-- [ ] AI streaming responses with proper error handling
-- [ ] Prompt library & management system
-- [ ] Tiptap editor integration with AI completion
-- [ ] 3 example apps (Blog Generator, Ad Studio, Landing Builder)
-- [ ] File upload + storage (Vercel Blob or S3)
-- [ ] Background job queue (BullMQ + Redis) for async AI tasks
-
-**Month 3: Polish, Docs & Launch**
-
-- [ ] Polar payments integration (optional, removable)
-- [ ] Email templates (Resend)
-- [ ] CLI improvements: `bistro add` commands
-- [ ] CLI templates: minimal, saas-basic, saas-full
-- [ ] Documentation site (apps/docs) with Nuxt Content
-- [ ] Landing page polish + pricing/features page
-- [ ] Rate limiting + security hardening
-- [ ] E2E tests (Playwright) for all apps
-- [ ] Production Dockerfile + deployment guides
-- [ ] Publish CLI to npm/bun registry
-- [ ] Launch on Product Hunt, Hacker News, /r/SideProject
+- [ ] Progress tracking & charts (improvement metrics)
+- [ ] Completion rate dashboard
+- [ ] Streak counter & badges
+- [ ] Data export (JSON)
+- [ ] PWA setup (service worker, installable)
+- [ ] Mobile-optimized UI
+- [ ] E2E tests (Playwright)
+- [ ] Example protocols (Neck Training, Running, Meditation)
+- [ ] Documentation site
+- [ ] Deploy to Vercel/Netlify
 
 ---
 
 ## 20) AI agent handoff (machine-actionable)
 
-**For AI agents building Bistro:**
+**For AI agents building Protocol:**
 
 1. **Bootstrap command:**
 
    ```bash
-   bun create bistro my-saas
-   cd my-saas
+   git clone https://github.com/alois/protocol
+   cd protocol
    bun install
-   docker compose up -d
-   bun db:migrate
-   bun dev
+   bun run dev
+   # Visit http://localhost:3000
    ```
 
-2. **Issue templates** in `.github/ISSUE_TEMPLATE/`:
-   - `feature.yml` — structured feature requests
-   - `bug.yml` — bug reports with reproduction steps
-   - `ai-task.yml` — machine-readable task format for AI agents
+2. **Key Files:**
+   - `CLAUDE.md` (root) — Project rules & patterns
+   - `.agent/README.md` — System documentation index
+   - `nuxt.config.ts` — Nuxt & PWA config
+   - `shared/db/schema.ts` — Dexie database schema
 
-3. **Prompt templates** in `/prompts/`:
-   - `blog-post.txt` — blog generation
-   - `ad-creative.txt` — ad copy generation
-   - `landing-page.txt` — landing page structure
-   - `seo-meta.txt` — meta descriptions
+3. **Architecture:**
+   - `/app/pages` — File-based routing
+   - `/app/composables` — Business logic (useProtocols, useTracking)
+   - `/shared/db` — Database operations
+   - `/shared/schemas` — Zod validation
 
-4. **API contracts:** OpenAPI spec at `/openapi/bistro.yaml` with full request/response schemas
+4. **Development:**
+   - No server setup needed
+   - No Docker required
+   - No .env needed (client-only)
+   - Edit, save, refresh (HMR included)
 
-5. **Scriptable tasks** in `/scripts/`:
-   - `setup.sh` — one-command setup
-   - `deploy.sh` — deployment automation
-   - `seed.sh` — database seeding
-   - `test-ai.sh` — test AI integrations
+5. **Testing:**
+   - Unit tests: `bun run test` (Vitest)
+   - E2E tests: `bun run test:integration` (Playwright)
+   - Linting: `bun run lint` (ESLint)
+   - Type check: `bun run typecheck`
 
-6. **Environment variables template** (`.env.example`):
-   - All required vars documented
-   - Links to where to get API keys
-   - Sensible defaults for local dev
+**AI workflow:**
 
-**AI collaboration workflow:**
-
-- Read `/docs/CONTRIBUTING.md` for code style, patterns, testing requirements
-- Check `/docs/ARCHITECTURE.md` for system design decisions
-- Use `/scripts/ai-generate.sh <feature-name>` to scaffold new features
-- Run `/scripts/ai-test.sh` before submitting PRs
-
----
-
-## 21) Security & compliance notes
-
-**For starter kit builders:**
-
-- API keys should NEVER be committed (checked by pre-commit hook)
-- GDPR compliance: user data export/deletion endpoints included
-- CCPA compliance: opt-out mechanisms in place
-- PCI compliance: never store card details (Stripe handles all payment data)
-- Rate limiting: per-IP and per-user to prevent abuse
-- Content Security Policy: strict CSP headers configured
-- Dependency scanning: Dependabot auto-PRs for vulnerabilities
+- Read CLAUDE.md for rules & patterns
+- Check `.agent/` for system documentation
+- Use composables pattern for shared logic
+- Store in Dexie (see schema.ts)
+- Test before committing
+- Use conventional commits
 
 ---
 
-## 22) Community & support
+## 21) Security & Privacy
+
+**Privacy guarantees:**
+
+- No data transmission (local-only storage)
+- No user tracking
+- No analytics (by default)
+- No third-party requests
+- No user authentication needed
+- GDPR compliant (no central data store)
+- Fully offline-capable
+
+**Data safety:**
+
+- IndexedDB data encrypted by browser
+- No sensitive data in localStorage
+- Export/backup functionality for user data
+- No auto-deletion of old protocols
+
+---
+
+## 22) Community & Support
 
 **Getting help:**
 
-- **Discord:** [discord.gg/bistro](#) — real-time chat with community
-- **GitHub Discussions:** Q&A, show & tell, ideas
-- **Stack Overflow:** Tag questions with `bistro-saas`
-- **Twitter/X:** [@bistrosass](#) — updates and announcements
+- **GitHub Issues:** Bug reports, feature requests
+- **GitHub Discussions:** Q&A, ideas, show & tell
+- **GitHub README:** Usage examples
 
 **Ways to contribute:**
 
 - Code contributions (features, bug fixes)
 - Documentation improvements
-- Example apps & templates
+- Example protocols (templates)
 - Translations (i18n)
-- Blog posts & tutorials
-- Video walkthroughs
-- Testing & bug reports
+- Bug reports & testing
+- UI/UX improvements
 
 **Recognition:**
 
 - All contributors listed in README
-- Top contributors get "core team" badge
-- Monthly spotlight on community projects
+- Contributors acknowledged in releases
 
 ---
 
@@ -653,23 +641,23 @@ Each example includes:
 
 **Confirmed specifications:**
 
-- ✅ License: MIT (most permissive)
-- ✅ Framework: Nuxt 4 + Nitro
+- ✅ License: MIT (free & open source)
+- ✅ Framework: Nuxt 4 (static/SSG)
 - ✅ UI: Nuxt UI + Tailwind 4
-- ✅ Database: PostgreSQL + Prisma only
-- ✅ Auth: Better Auth
-- ✅ AI: Vercel AI SDK (no vector DB by default)
-- ✅ Payments: Polar
+- ✅ Storage: Dexie.js (IndexedDB wrapper)
+- ✅ Architecture: Client-side only (no server)
+- ✅ PWA: Vite PWA plugin (offline + installable)
 - ✅ Runtime: Bun
-- ✅ Deployment: Docker-first
-- ✅ Monetization: GitHub Sponsors only (100% free core)
-- ✅ Structure: Monorepo with landing, starter kit, docs, CLI
-- ✅ IDE Setup: VSCode, Zed, devcontainers, AI assistant configs
+- ✅ Deployment: Static hosting (Vercel, Netlify, etc)
+- ✅ Monetization: Free forever (GitHub Sponsors optional)
+- ✅ Structure: Single Nuxt app (no monorepo)
+- ✅ Auth: None (local device only)
+- ✅ Database: IndexedDB via Dexie (no server DB)
 
 **Next steps:**
 
-1. Set up monorepo structure
-2. Initialize Nuxt 4 apps
-3. Build CLI scaffolding tool
-4. Create landing page
-5. Start Month 1 tasks from roadmap
+1. Create Protocol documentation structure
+2. Build example protocols
+3. Implement progress tracking/analytics
+4. Add PWA features
+5. Deploy to production

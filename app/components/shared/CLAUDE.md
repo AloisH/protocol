@@ -1,18 +1,24 @@
 # Shared Components
 
-Reusable UI components used across the app.
+Reusable UI components used across the app (shared utilities, not feature-specific).
 
 ## Components
 
+- `AppHeader.vue` - Header with logo and navigation
+  - Auto-renders app branding
+  - Navigation links (Home, Protocols, Tracking, Analytics)
+  - Color mode toggle
+  - Responsive mobile menu
+
 - `AppLogo.vue` - Application logo with optional link to home
   - Props: `to?: string` (default: '/')
-  - Displays "Bistro" text with gradient styling
+  - Displays "Protocol" text
   - Responsive sizing
   - Includes test file: `AppLogo.test.ts`
 
 ## Dependencies
 
-- Nuxt UI: ULink component
+- Nuxt UI: ULink, UButton, UColorModeButton
 - Auto-imported (no import needed)
 
 ## Usage
@@ -23,11 +29,10 @@ Reusable UI components used across the app.
   <AppLogo />
 
   <!-- Custom link -->
-  <AppLogo to="/dashboard" />
+  <AppLogo to="/protocols" />
 
   <!-- In header -->
-  <UHeader>
-    <template #left>
+  <AppHeader />
       <AppLogo />
     </template>
   </UHeader>
