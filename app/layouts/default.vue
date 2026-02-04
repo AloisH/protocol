@@ -182,7 +182,7 @@ const footerColumns: FooterColumn[] = [
           <span class="font-semibold">Bistro</span>
         </div>
         <p class="text-muted mt-1 text-sm">
-          Open source todo app built with Nuxt.
+          Open source local-first PWA built with Nuxt.
         </p>
       </template>
 

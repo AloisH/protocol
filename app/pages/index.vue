@@ -8,7 +8,7 @@ const softwareSchema = {
   '@type': 'SoftwareApplication',
   'name': 'Bistro',
   'description':
-    'Free, open-source todo app built with Nuxt 4. Simple task management with team collaboration.',
+    'Free, open-source local-first PWA built with Nuxt 4. Runs completely on your device with no backend required.',
   'url': siteUrl,
   'applicationCategory': 'ProductivityApplication',
   'operatingSystem': 'Web',
