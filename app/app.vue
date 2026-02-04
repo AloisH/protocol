@@ -1,7 +1,4 @@
 <script setup>
-// Auto-refresh session before expiry
-useSessionRefresh();
-
 const config = useRuntimeConfig();
 const siteUrl = config.public.appUrl || 'http://localhost:3000';
 
