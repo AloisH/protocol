@@ -12,10 +12,14 @@ defineEmits<{
 
 const statusColor = computed(() => {
   switch (protocol?.status) {
-    case 'active': return 'green';
-    case 'paused': return 'yellow';
-    case 'completed': return 'gray';
-    default: return 'blue';
+    case 'active':
+      return 'success';
+    case 'paused':
+      return 'warning';
+    case 'completed':
+      return 'neutral';
+    default:
+      return 'info';
   }
 });
 
@@ -72,7 +76,7 @@ const durationLabel = computed(() => {
     <template #footer>
       <div class="flex gap-2 justify-end">
         <UButton
-          color="gray"
+          color="neutral"
           variant="ghost"
           size="sm"
           icon="i-lucide-edit"
@@ -81,7 +85,7 @@ const durationLabel = computed(() => {
           Edit
         </UButton>
         <UButton
-          color="red"
+          color="error"
           variant="ghost"
           size="sm"
           icon="i-lucide-trash-2"

@@ -3,19 +3,23 @@ import type { Protocol } from '#shared/db/schema';
 
 interface Props {
   protocol: Protocol | null;
-  open?: boolean;
+  modelValue?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
-  open: false,
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
 });
 
 const emit = defineEmits<{
-  confirm: [];
-  cancel: [];
+  'update:modelValue': [value: boolean];
+  'confirm': [];
 }>();
 
 const loading = ref(false);
+const isOpen = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit('update:modelValue', value),
+});
 
 async function handleConfirm() {
   loading.value = true;
@@ -24,38 +28,40 @@ async function handleConfirm() {
   }
   finally {
     loading.value = false;
+    isOpen.value = false;
   }
 }
 
 function handleCancel() {
-  emit('cancel');
+  isOpen.value = false;
 }
 </script>
 
 <template>
-  <UModal :open="open" @close="handleCancel">
-    <div class="p-6 space-y-6">
-      <!-- Header -->
-      <div class="flex items-start gap-4">
-        <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-          <UIcon name="i-lucide-alert-triangle" class="text-red-600" />
+  <UModal v-model:open="isOpen" title="Delete Protocol?" :close-button="true">
+    <template #header>
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-error-100 dark:bg-error-900/20">
+          <UIcon name="i-lucide-alert-triangle" class="w-5 h-5 text-error-600 dark:text-error-400" />
         </div>
         <div>
-          <h3 class="text-lg font-bold">
+          <h2 class="text-lg font-semibold">
             Delete Protocol?
-          </h3>
-          <p class="text-sm text-gray-500 mt-1">
+          </h2>
+          <p class="text-sm text-neutral-600 dark:text-neutral-400">
             This action cannot be undone.
           </p>
         </div>
       </div>
+    </template>
 
-      <!-- Protocol Info -->
-      <div v-if="protocol" class="bg-gray-50 p-4 rounded-lg">
-        <p class="font-semibold text-gray-900">
+    <!-- Protocol Info -->
+    <div v-if="protocol" class="space-y-4">
+      <div class="bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg border border-neutral-200 dark:border-neutral-800">
+        <p class="font-semibold text-neutral-900 dark:text-white">
           {{ protocol.name }}
         </p>
-        <p v-if="protocol.description" class="text-sm text-gray-600 mt-1">
+        <p v-if="protocol.description" class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
           {{ protocol.description }}
         </p>
       </div>
@@ -63,12 +69,14 @@ function handleCancel() {
       <!-- Warning -->
       <UAlert
         title="All routines and tracking data will also be deleted"
-        color="red"
+        color="error"
         icon="i-lucide-info"
         variant="soft"
       />
+    </div>
 
-      <!-- Actions -->
+    <!-- Actions -->
+    <template #footer>
       <div class="flex gap-3 justify-end">
         <UButton
           variant="ghost"
@@ -78,7 +86,7 @@ function handleCancel() {
           Keep It
         </UButton>
         <UButton
-          color="red"
+          color="error"
           :loading="loading"
           icon="i-lucide-trash-2"
           @click="handleConfirm"
@@ -86,6 +94,6 @@ function handleCancel() {
           Delete Protocol
         </UButton>
       </div>
-    </div>
+    </template>
   </UModal>
 </template>

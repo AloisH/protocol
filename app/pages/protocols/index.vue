@@ -123,17 +123,15 @@ async function handleDeleteConfirm() {
 
   <!-- Create/Edit Form Modal -->
   <ProtocolForm
+    v-model="formOpen"
     :protocol="isEditMode ? selectedProtocol || undefined : undefined"
-    :open="formOpen"
     @submit="handleFormSubmit"
-    @close="formOpen = false"
   />
 
   <!-- Delete Confirmation Dialog -->
   <DeleteProtocolDialog
+    v-model="deleteDialogOpen"
     :protocol="selectedProtocol"
-    :open="deleteDialogOpen"
     @confirm="handleDeleteConfirm"
-    @cancel="deleteDialogOpen = false"
   />
 </template>
