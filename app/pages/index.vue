@@ -39,7 +39,6 @@ const featuresSection = ref<HTMLElement | null>(null);
 const testimonialsSection = ref<HTMLElement | null>(null);
 const pricingSection = ref<HTMLElement | null>(null);
 const faqSection = ref<HTMLElement | null>(null);
-const ctaSection = ref<HTMLElement | null>(null);
 
 const { observe } = useScrollAnimation();
 
@@ -50,7 +49,6 @@ onMounted(() => {
     testimonialsSection,
     pricingSection,
     faqSection,
-    ctaSection,
   ].forEach((section) => { observe(section); });
 });
 </script>
@@ -63,6 +61,5 @@ onMounted(() => {
     <HomeTestimonials ref="testimonialsSection" />
     <HomePricing ref="pricingSection" />
     <HomeFAQ ref="faqSection" />
-    <HomeCTA ref="ctaSection" />
   </div>
 </template>

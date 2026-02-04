@@ -30,11 +30,6 @@ const navLinks = computed<NavigationMenuItem[][]>(() => [
       to: '/changelog',
       active: route.path.startsWith('/changelog'),
     },
-    {
-      label: 'Contact',
-      to: '/contact',
-      active: route.path === '/contact',
-    },
   ],
 ]);
 
@@ -67,7 +62,6 @@ const footerColumns: FooterColumn[] = [
     label: 'Company',
     children: [
       { label: 'About', to: '/#features' },
-      { label: 'Contact', to: '/contact' },
     ],
   },
 ];
