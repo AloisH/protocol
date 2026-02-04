@@ -60,10 +60,10 @@ async function handleSubmit() {
     // Validate
     const validated = schema.parse(state);
 
-    // Call emit with validated data
+    // Emit data
     emit('submit', validated);
 
-    // Reset form on success
+    // Reset form on success if creating
     if (!isEditMode.value) {
       state.name = '';
       state.description = '';
@@ -75,7 +75,6 @@ async function handleSubmit() {
   }
   catch (e) {
     error.value = String(e);
-    console.error('Form validation error:', e);
   }
   finally {
     loading.value = false;
@@ -94,52 +93,51 @@ function handleCancel() {
     :title="isEditMode ? 'Edit Protocol' : 'Create Protocol'"
     :description="isEditMode ? 'Update your protocol details' : 'Set up a new routine or protocol'"
   >
-    <!-- Form -->
+    <!-- Form Body -->
     <UForm :state="state" :schema="schema" class="space-y-4" @submit="handleSubmit">
-      <!-- Name -->
-      <UFormField name="name" label="Protocol Name *" required>
+      <!-- Name Field -->
+      <UFormField name="name" label="Protocol Name" required>
         <UInput
           v-model="state.name"
           placeholder="e.g., Neck Training"
           icon="i-lucide-zap"
-          aria-label="Protocol name"
         />
       </UFormField>
 
-      <!-- Description -->
-      <UFormField name="description" label="Description (optional)">
+      <!-- Description Field -->
+      <UFormField name="description" label="Description">
         <UTextarea
           v-model="state.description"
           placeholder="Describe your protocol..."
           rows="3"
-          aria-label="Protocol description"
         />
       </UFormField>
 
-      <!-- Duration -->
-      <UFormField name="duration" label="Frequency *" required>
+      <!-- Duration Field -->
+      <UFormField name="duration" label="Frequency" required>
         <USelect
           v-model="state.duration"
           :options="durationOptions"
           placeholder="Select frequency"
-          aria-label="Protocol frequency"
         />
       </UFormField>
 
-      <!-- Error Message -->
+      <!-- Error Alert -->
       <UAlert
         v-if="error"
         title="Validation Error"
         :description="error"
         color="error"
         icon="i-lucide-alert-circle"
+        variant="soft"
       />
     </UForm>
 
-    <!-- Actions -->
+    <!-- Footer Actions -->
     <template #footer>
-      <div class="flex gap-2 justify-end">
+      <div class="flex gap-3 justify-end">
         <UButton
+          color="gray"
           variant="ghost"
           :disabled="loading"
           @click="handleCancel"
@@ -147,12 +145,12 @@ function handleCancel() {
           Cancel
         </UButton>
         <UButton
-          type="submit"
+          color="primary"
           :loading="loading"
           icon="i-lucide-check"
           @click="handleSubmit"
         >
-          {{ isEditMode ? 'Update Protocol' : 'Create Protocol' }}
+          {{ isEditMode ? 'Update' : 'Create' }}
         </UButton>
       </div>
     </template>

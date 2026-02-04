@@ -17,7 +17,7 @@ const statusColor = computed(() => {
     case 'paused':
       return 'warning';
     case 'completed':
-      return 'neutral';
+      return 'gray';
     default:
       return 'info';
   }
@@ -76,7 +76,7 @@ const durationLabel = computed(() => {
     <template #footer>
       <div class="flex gap-2 justify-end">
         <UButton
-          color="neutral"
+          color="gray"
           variant="ghost"
           size="sm"
           icon="i-lucide-edit"
