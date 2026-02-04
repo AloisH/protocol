@@ -10,14 +10,12 @@ export default defineNuxtConfig({
   // https://github.com/nuxt/nuxt/issues/33987
 
   modules: [
-    '@nuxt/content',
     '@nuxt/ui',
     '@nuxt/image',
     '@nuxt/test-utils/module',
     'nuxt-security',
     '@nuxtjs/sitemap',
     'nuxt-og-image',
-    // '@scalar/nuxt', // TODO: fix build issue with @scalar/helpers
   ],
 
   // Auto-import components from nested feature directories
@@ -59,12 +57,6 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { prerender: true },
-    '/blog': { prerender: true },
-    // ISR only in production (causes payload 404s in dev)
-    '/blog/**': process.env.NODE_ENV === 'production' ? { isr: 3600 } : {},
-    '/docs': { prerender: true },
-    '/docs/**': process.env.NODE_ENV === 'production' ? { isr: 3600 } : {},
-    '/changelog': { prerender: true },
     '/legal/**': { prerender: true },
     '/contact': { prerender: true },
   },
@@ -73,14 +65,14 @@ export default defineNuxtConfig({
   nitro: {
     rollupConfig: {
       plugins: [vue()],
-      external: [/^@prisma\//, /\.wasm$/],
+      external: [/\.wasm$/],
     },
     experimental: {
       wasm: true,
     },
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/blog', '/docs', '/rss.xml'],
+      routes: ['/'],
     },
   },
 
@@ -163,7 +155,6 @@ export default defineNuxtConfig({
     strict: process.env.NODE_ENV === 'production',
   },
   sitemap: {
-    exclude: ['/admin/**', '/org/**', '/api/**', '/onboarding/**'],
-    sources: ['/api/__sitemap__/urls'],
+    exclude: [],
   },
 });
