@@ -54,7 +54,6 @@ describe('env Schemas', () => {
           RESEND_API_KEY: 're_xxx',
           OPENAI_API_KEY: 'sk-xxx',
           ANTHROPIC_API_KEY: 'sk-ant-xxx',
-          REDIS_URL: 'redis://localhost:6379',
           GITHUB_CLIENT_ID: 'gh_id',
           GITHUB_CLIENT_SECRET: 'gh_secret',
           GOOGLE_CLIENT_ID: 'google_id',
@@ -197,7 +196,6 @@ describe('env Schemas', () => {
     });
 
     it('contains storage group', () => {
-      expect(OPTIONAL_VAR_GROUPS.storage).toContain('REDIS_URL');
       expect(OPTIONAL_VAR_GROUPS.storage).toContain('S3_BUCKET');
     });
 

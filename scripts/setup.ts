@@ -113,8 +113,7 @@ async function main() {
         .replace(
           'DATABASE_URL=postgresql://bistro:bistro@localhost:5432/bistro',
           'DATABASE_URL=postgresql://bistro:bistro@postgres:5432/bistro',
-        )
-        .replace('REDIS_URL=redis://localhost:6379', 'REDIS_URL=redis://redis:6379');
+        );
       await writeFile('.env.docker', dockerEnv);
       console.log(c.green('✓') + ' Created .env.docker (for Docker testing)');
     }
@@ -132,7 +131,7 @@ async function main() {
   const dockerRunning = await checkDockerRunning();
 
   if (!dockerRunning) {
-    if (await prompt('Start Docker services (postgres, redis)?')) {
+    if (await prompt('Start Docker services (postgres)?')) {
       console.log('  Starting services...');
       await $`docker compose up -d`;
       console.log(c.green('✓') + ' Docker services started');
