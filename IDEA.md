@@ -1,73 +1,68 @@
-# Bistro — Tech Plan & AI Handover
+# Protocol — Tech Plan & AI Handover
 
-> **Purpose:** A production-ready technical plan and machine-actionable handoff package so a human developer or another AI agent can pick up the project and start building immediately.
+> **Purpose:** Production-ready local-first PWA for personal routine/protocol tracking. Machine-actionable handoff for developers and AI agents.
 
 ---
 
 ## 1) Executive summary
 
-Bistro is a **free, open-source Nuxt 4 starter kit** for developers building AI-powered SaaS products. Unlike paid alternatives ($149-$349), Bistro provides production-ready foundations with built-in AI content/productization workflows (Idea Builder, Ad Creatives, Brand Package, Landing Page, Email Funnels, SEO content). This document provides: tech stack with rationale, system architecture, data model, API contracts, dev setup, CI/CD, security, testing strategy, MVP roadmap, and machine-friendly handoff for AI agents.
+Protocol is a **free, open-source Nuxt 4 PWA** for tracking daily, weekly, monthly, or yearly personal protocols. Examples: neck training exercises with improvement tracking, reinforcement training, habit tracking, routine management. Local-first: all data stored in IndexedDB via Dexie.js, no server required. This document provides: tech stack with rationale, system architecture, data model, local storage patterns, dev setup, PWA config, testing strategy, MVP roadmap, and AI-friendly handoff.
 
 **Tech Stack Summary:**
 
-- **Framework:** Nuxt 4 + Nitro (full-stack)
+- **Framework:** Nuxt 4 (SSG/static)
 - **UI:** Nuxt UI + Tailwind CSS 4
-- **Database:** PostgreSQL + Prisma
-- **Auth:** Better Auth
-- **AI:** Vercel AI SDK
-- **Content:** Nuxt Content
-- **Payments:** Polar
-- **Email:** Resend
+- **Storage:** Dexie.js (IndexedDB wrapper)
+- **PWA:** Vite PWA plugin
 - **Runtime:** Bun
-- **Deployment:** Docker + Docker Compose
+- **Deployment:** Static hosting (Vercel, Netlify, GitHub Pages)
 
 ---
 
-## 2) Goals & success metrics (KPI)
+## 2) Goals & success metrics
 
-**Developer Experience:**
+**User Experience:**
 
-- Bootstrap to running app: < 10 minutes
-- First deployment: < 30 minutes
-- Full customization understanding: < 2 hours with docs
-
-**Adoption Metrics:**
-
-- GitHub stars: 1k in first 3 months
-- Active forks/projects built: 100+ in 6 months
-- Community contributors: 10+ regular contributors
+- Quick protocol creation: < 2 minutes
+- Track exercises/routines with ease
+- See improvement over weeks/months
+- Mobile-friendly (native app feel via PWA)
 
 **Technical Goals:**
 
-- Zero-config local dev with Docker Compose
-- Type-safe end-to-end (frontend ↔ API)
-- Mobile-responsive out of the box
+- Zero server required (fully local-first)
+- Offline-first: full functionality without internet
+- Type-safe client-side architecture
 - Lighthouse score > 90
+- Installable as PWA (iOS/Android/Desktop)
+- Sync across tabs/windows in same browser
+
+**Adoption Metrics:**
+
+- GitHub stars: 500+ year 1
+- Active forks/projects: 50+ in 6 months
+- Community contributions: 5+ regular contributors
 
 ---
 
-## 3) Competitor comparison & differentiation
+## 3) Differentiation
 
-| Feature          | Bistro                   | supastarter          | nuxtstarter.ai | supersaas     |
-| ---------------- | ------------------------ | -------------------- | -------------- | ------------- |
-| **Price**        | **Free (OSS)**           | $349 ($244 sale)     | $169           | $149          |
-| **Framework**    | **Nuxt 4**               | Nuxt 3               | Nuxt 3         | Nuxt 4        |
-| **UI**           | **Nuxt UI + Tailwind 4** | Radix Vue + Tailwind | Tailwind       | Tailwind v4   |
-| **ORM**          | **Prisma**               | Prisma               | Supabase       | Drizzle       |
-| **Auth**         | **Better Auth**          | Multiple options     | Basic + OAuth  | 30+ providers |
-| **AI SDK**       | **✓ Vercel AI SDK**      | Vercel AI SDK        | ❌             | ❌            |
-| **Content**      | **✓ Nuxt Content**       | MDX blog             | ❌             | ❌            |
-| **AI Workflows** | **✓ Built-in**           | Basic                | ❌             | ❌            |
-| **Example Apps** | **6+**                   | Few                  | Few            | 5+            |
-| **License**      | **MIT**                  | Proprietary          | Proprietary    | Proprietary   |
+| Aspect        | Protocol                | Competitors                      |
+| ------------- | ----------------------- | -------------------------------- |
+| **Model**     | **Local-first PWA**     | Cloud SaaS (Fitbod, Hevy, etc)  |
+| **Price**     | **Free**                | $10-30/month                     |
+| **Data**      | **Your device only**    | Cloud servers (privacy concerns) |
+| **Offline**   | **✓ Full support**      | Limited/requires internet        |
+| **Stack**     | **Nuxt 4 + Dexie**      | React + various backends        |
+| **License**   | **MIT**                 | Proprietary/SaaS                |
 
-**Bistro's Unique Value:**
+**Protocol's Unique Value:**
 
-- **Free & open-source** — no $149-$349 upfront cost
-- **AI-first** — content generation, ad creatives, SEO tools built-in
-- **Productization workflows** — not just auth/payments, but complete content pipelines
+- **Privacy-first** — no server, data stays on user's device
+- **Offline-ready** — works without internet
+- **Zero cost** — free & open source
+- **Fast** — instant load, no network latency
 - **Community-driven** — transparent roadmap, accept contributions
-- **No vendor lock-in** — choose your DB, hosting, AI provider
 
 ---
 
@@ -75,309 +70,281 @@ Bistro is a **free, open-source Nuxt 4 starter kit** for developers building AI-
 
 **Why these choices?**
 
-- **Nuxt 4**: Latest stable, full-stack, great DX, huge ecosystem
-- **Better Auth**: Modern, flexible, no vendor lock-in
-- **Vercel AI SDK**: Provider-agnostic, streaming built-in
-- **Prisma**: Type-safe ORM, great migrations
+- **Nuxt 4**: Latest, great DX, SEO-friendly, massive ecosystem
+- **Dexie.js**: Simple, powerful IndexedDB wrapper, type-safe
+- **Nuxt UI**: Pre-built, accessible components
+- **Tailwind CSS 4**: Modern styling, responsive out-of-the-box
+- **Vite PWA**: Zero-config PWA setup
 - **Bun**: Fastest runtime, all-in-one tooling
-- **Docker**: Portable, consistent environments
-- **Polar**: Developer-friendly payments, merchant of record
 
 **Core Framework:**
 
-- **Nuxt 4** — Full-stack framework (Vue 3, Composition API, TypeScript)
-  - SSR/SSG support, file-based routing, auto-imports
-  - Server routes for API (no separate backend needed)
-  - Nitro server engine (universal, fast, portable)
-- **Tailwind CSS 4** — Utility-first styling with latest performance improvements
-- **Nuxt UI** — Pre-built, accessible components built on Headless UI
-- **Nuxt Content** — File-based CMS for docs, blog, MDX support
+- **Nuxt 4** — Modern Vue 3 framework (TypeScript, Composition API)
+  - Static/SSG rendering for PWA
+  - File-based routing, auto-imports
+  - No server required (client-side only)
+- **Tailwind CSS 4** — Utility-first, responsive-by-default styling
+- **Nuxt UI** — Pre-built, accessible components
+- **Vue 3 Composition API** — Reactive state, composables
 
-**Data & Backend:**
+**Client-Side Storage:**
 
-- **Prisma** — TypeScript-first ORM with migrations
-- **PostgreSQL** — Primary database (local/Neon/Vercel Postgres)
-- **Redis** (optional) — Background jobs, caching (Upstash for serverless)
+- **Dexie.js** — Simple, typed IndexedDB wrapper
+  - Type-safe schema definition
+  - Easy migrations
+  - Supports querying, filtering, sorting
+- **IndexedDB** — Browser native storage (50MB+ available)
+- **LocalStorage** — App preferences, settings
 
-**Auth & Security:**
+**PWA & Offline:**
 
-- **Better Auth** — Modern, framework-agnostic auth library
-  - Email/password, OAuth, magic links, 2FA
-  - Session management, CSRF protection
-  - Built-in multi-tenancy support
-
-**AI Integration:**
-
-- **Vercel AI SDK** — Unified interface for LLMs
-  - Streaming responses
-  - OpenAI, Anthropic, local models
-  - Built-in prompt caching
-- **Tiptap** — Rich text editor for AI-generated content
-- **Vector DB:** Not included by default (can add pgvector if needed)
-
-**Optional Services:**
-
-- **Payments:** Polar (merchant of record, simple setup)
-- **Email:** Resend (developer-friendly, generous free tier)
-- **Storage:** Vercel Blob or S3-compatible
-- **Analytics:** Vercel Analytics (privacy-friendly)
-
-**Deployment:**
-
-- **Docker** (primary) — Docker Compose for dev, production-ready Dockerfile
-- **Alternative:** Vercel, Cloudflare Pages, Netlify, Railway
-- **Database:** Neon, Supabase, or self-hosted PostgreSQL
+- **Vite PWA** — Service worker, manifest, offline support
+- **Offline-first** — Works completely without internet
+- **Installable** — Native app feel on iOS/Android/Desktop
+- **Cross-tab sync** — Broadcast Channel API for sync across windows
 
 **Dev Tools:**
 
-- **Bun** — Fast all-in-one runtime, package manager, bundler
+- **Bun** — Runtime, package manager, bundler
 - **Vitest** — Unit testing (ESM-native, fast)
 - **Playwright** — E2E testing
 - **ESLint + Prettier** — Code quality
-- **Docker Compose** — Local dev environment
 - **GitHub Actions** — CI/CD
 
 **IDE & AI Assistant Setup:**
 
-- **VSCode** — Settings, extensions, snippets pre-configured
-- **Zed** — Modern editor config included
-- **Cursor/Claude/Copilot** — AI coding assistant rules and prompts
-- **Dev containers** — Ready-to-use devcontainer.json
+- **VSCode** — Settings, extensions pre-configured
+- **Cursor/Claude/Copilot** — AI assistant rules included
 
 ---
 
 ## 5) System architecture
 
-**Architecture:** Full-stack Nuxt 4 monolith powered by Nitro
+**Architecture:** Client-side only PWA, no backend required
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  Users (Web/Mobile)                             │
-└────────────────┬────────────────────────────────┘
-                 │
-        ┌────────▼─────────┐
-        │  Reverse Proxy   │  Nginx/Caddy (SSL/CDN)
-        └────────┬─────────┘
-                 │
-┌────────────────▼──────────────────────────────────┐
-│  Docker Container: Nuxt 4 App                     │
-│  ┌──────────────────────────────────────────┐    │
-│  │ Frontend (Vue 3 + Nuxt UI)               │    │
-│  │ • Pages, Components, Composables         │    │
-│  └──────────────────────────────────────────┘    │
-│  ┌──────────────────────────────────────────┐    │
-│  │ Backend (Nitro Server)                   │    │
-│  │ • API Routes (/api/v1/*)                 │    │
-│  │ • Server Middleware (auth, rate limit)   │    │
-│  │ • AI Service (Vercel AI SDK)             │    │
-│  │ • Better Auth integration                │    │
-│  └──────────────────────────────────────────┘    │
-└────────┬──────────────────────────────┬───────────┘
-         │                              │
-    ┌────▼─────────┐           ┌────────▼──────────┐
-    │ PostgreSQL   │           │  External APIs    │
-    │ + Prisma     │           │  • OpenAI/Claude  │
-    │              │           │  • Polar          │
-    └──────────────┘           │  • Resend         │
-                               └───────────────────┘
+│  User Device (Web/iOS/Android App)              │
+└─────────────────┬───────────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────────┐
+│  Nuxt 4 PWA (Static Deployment)                 │
+│  ┌──────────────────────────────────────────┐   │
+│  │ Pages & Components (Vue 3)               │   │
+│  │ • Protocol creation, tracking, analytics │   │
+│  │ • Routines management UI                 │   │
+│  │ • Exercise logging                       │   │
+│  └──────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────┐   │
+│  │ Client-Side State (Composables)          │   │
+│  │ • Reactive state management              │   │
+│  │ • Computed properties, watchers          │   │
+│  └──────────────────────────────────────────┘   │
+└────────────┬──────────────────────────────┬─────┘
+             │                              │
+    ┌────────▼──────────┐        ┌─────────▼────────┐
+    │ IndexedDB (Dexie) │        │ Service Worker   │
+    │ • Protocols       │        │ • Offline cache  │
+    │ • Routines        │        │ • Background sync│
+    │ • Exercises       │        │ • Push notifs    │
+    │ • Tracking logs   │        └──────────────────┘
+    │ • Settings        │
+    └───────────────────┘
 ```
 
 **Core Components:**
 
-- **Frontend:** Nuxt pages + Nuxt UI components
-- **Backend:** Nitro server routes (built into Nuxt 4)
-- **API:** RESTful endpoints at `/api/v1/*`
-- **Auth:** Better Auth middleware for session management
-- **AI Layer:** Vercel AI SDK with streaming support
-- **Database:** Prisma client for type-safe queries
-- **Content:** Nuxt Content for docs/blog (MDX)
-- **Jobs:** Optional BullMQ + Redis for async AI tasks
+- **Pages:** Nuxt file-based routing for all views
+- **Components:** Reusable Vue 3 components (Composition API)
+- **Composables:** Shared logic (protocol management, tracking, analytics)
+- **Storage:** Dexie.js for structured, typed local data
+- **PWA:** Service worker for offline + installable experience
+- **UI:** Nuxt UI + Tailwind for consistent design
+- **Routing:** Full client-side navigation (no server redirects)
 
-**Why Nitro:**
+**Why Local-First:**
 
-- Universal JS engine (runs anywhere)
-- Auto-imports, file-based routing
-- Built-in caching, storage layers
-- Hot module replacement in dev
+- Zero server complexity
+- User privacy (data never leaves device)
+- Instant load times (no network latency)
+- Works offline (service worker caching)
+- Easy deployment (static hosting)
 
 ---
 
 ## 6) Data model (core entities)
 
-- **User**: id, email, name, roles, billing_customer_id, created_at, updated_at
-- **Organization / Workspace**: id, name, owner_id, plan, seats
-- **Project**: id, org_id, title, template_id, settings, status
-- **Template**: id, type, slug, schema, ui_meta
-- **Asset**: id, project_id, url, mime_type, size
-- **AIJob**: id, project_id, type, input, status, result_ref, cost, duration
-- **PromptLibrary**: id, name, prompt_text, tags
-- **Subscription**: id, org_id, stripe_subscription_id, tier
+All stored in IndexedDB via Dexie.js:
 
-Schema definitions and Prisma models are included in `/infra/prisma/schema.prisma` in the repo scaffold.
+- **Protocol**: id, name, description, category, created_at, updated_at
+  - Duration: daily, weekly, monthly, yearly
+  - Status: active, paused, completed
+  - Target metric (e.g., "increase range of motion 20%")
+
+- **Routine**: id, protocol_id, name, order, notes
+  - Frequency: daily, weekly, specific days
+  - Time of day: morning, afternoon, evening
+  - Duration in minutes
+
+- **Exercise**: id, routine_id, name, sets, reps, weight, notes
+  - Intensity level (1-10)
+  - Equipment type
+  - Video URL (optional)
+
+- **TrackingLog**: id, exercise_id, date, completed, sets_done, reps_done, weight_used, notes, difficulty_felt
+  - Duration taken
+  - Energy level (1-10)
+  - Pain/discomfort level (1-10)
+
+- **Analytics**: id, protocol_id, metric_name, values[]
+  - Tracks progress over time
+  - Completion rate
+  - Improvement metrics
+
+- **Settings**: userId, theme, notifications_enabled, rest_day_schedule
+
+Dexie schema definition in `shared/db/schema.ts`
 
 ---
 
-## 7) API contract / OpenAPI skeleton (machine actionable)
+## 7) Data operations (client-side)
 
-A minimal OpenAPI v3 skeleton is included in `/openapi/bistro.yaml` with these endpoints:
+No server APIs. All operations use Dexie.js composables:
 
-- `POST /api/v1/auth/signup`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/templates`
-- `POST /api/v1/projects`
-- `GET /api/v1/projects/{id}`
-- `POST /api/v1/projects/{id}/ai/generate` (enqueue an AI job)
-- `GET /api/v1/ai/jobs/{jobId}`
-- `POST /api/v1/webhooks/stripe`
+**Protocol Management:**
+- `createProtocol(name, description, duration)` → Protocol
+- `updateProtocol(id, updates)` → Protocol
+- `deleteProtocol(id)` → void
+- `getProtocol(id)` → Protocol
+- `listProtocols()` → Protocol[]
 
-The OpenAPI file contains types for request/response bodies and example payloads.
+**Routine Management:**
+- `addRoutine(protocolId, name)` → Routine
+- `updateRoutine(id, updates)` → Routine
+- `deleteRoutine(id)` → void
+- `reorderRoutines(protocolId, order[])` → void
+
+**Tracking:**
+- `logExercise(exerciseId, date, completion)` → TrackingLog
+- `getProgressForExercise(exerciseId, days)` → TrackingLog[]
+- `calculateMetrics(protocolId, timeRange)` → Metrics
+
+**Analytics:**
+- `getCompletionRate(protocolId, days)` → percentage
+- `getImprovement(exerciseId, metric)` → delta
+- `exportData()` → JSON
+
+All operations stored in IndexedDB, available offline.
 
 ---
 
-## 8) Dev environment & bootstrap
+## 8) Dev environment & setup
 
-**Local bootstrap script** (bash) included as `scripts/bootstrap.sh`:
+**Bootstrap:**
+```bash
+git clone https://github.com/alois/protocol
+cd protocol
+bun install
+bun run dev
+# Opens http://localhost:3000
+```
 
-- Installs Bun, Docker Compose (if needed)
-- Reads `.env.example` → `.env`
-- Starts Postgres + Redis via Docker Compose
-- Runs `bun install` and `bun dev` to start Nuxt app
+**No server setup needed** — No Docker, Postgres, or external services.
 
-**Repository layout** (monorepo with bun workspaces):
+**Repository layout:**
 
 ```
 / (root)
-  /apps
-    /landing (marketing site - Nuxt Content)
-    /web (starter kit - full-stack Nuxt 4 app)
-    /docs (documentation - Nuxt Content)
-  /packages
-    /cli (bistro CLI for project scaffolding)
-    /ui (shared Nuxt UI components)
-    /lib (shared types, utils)
-    /database (Prisma schema, migrations, seed data)
-    /config (shared configs - ESLint, Prettier, TS)
-  /templates (project templates for CLI)
-  /prompts (AI prompt templates)
-  /scripts (setup, deployment, testing)
-  /.vscode (VSCode settings, extensions, snippets)
-  /.zed (Zed editor config)
-  /.devcontainer (Dev container config)
-  /.claude (Claude Code rules)
-  /.github (Actions, copilot instructions, templates)
-  .cursorrules (Cursor AI rules)
-  docker-compose.yml
-  .env.example
-  README.md
+  /app
+    /pages         # Route pages (protocols, routines, tracking)
+    /components    # Vue components (ProtocolCard, ExerciseLog, etc)
+    /composables   # Shared logic (useProtocols, useTracking, etc)
+    /layouts       # Page layouts (default, mobile)
+  /shared
+    /db            # Dexie schema (schema.ts, migrations.ts)
+    /schemas       # Zod validation schemas
+    /utils         # Helpers (date, calc, export)
+  /public          # Static assets
+  /.vscode         # VSCode config
+  /.github         # CI/CD workflows
+  .cursorrules     # Cursor AI rules
+  nuxt.config.ts
+  dexie.config.ts
+  package.json
 ```
 
-**Apps breakdown:**
+**Key directories:**
 
-- **landing** — Public-facing site (bistro.dev), built with Nuxt Content
-- **web** — The starter kit itself (users clone/fork this)
-- **docs** — Documentation site (docs.bistro.dev)
-
-**CLI package:**
-
-- `bun create bistro` — Bootstrap new project from template
-- `bistro add [feature]` — Add features (auth, payments, AI, etc.)
-- `bistro deploy` — Guided deployment setup
+- `/app/pages` — File-based routing (index, protocols/, tracking/)
+- `/app/composables` — Logic composition (useProtocols, useTracking)
+- `/shared/db` — Dexie schema & queries
+- `/shared/schemas` — Zod validation
 
 ---
 
-## 9) IDE & developer environment setup
-
-**Pre-configured for popular IDEs:**
+## 9) IDE & developer environment
 
 **VSCode (`.vscode/` included):**
 
-- `settings.json` — Format on save, ESLint, Prettier, auto-imports
-- `extensions.json` — Recommended extensions:
+- `settings.json` — Format on save, ESLint, Prettier
+- `extensions.json` — Recommended:
   - Vue - Official (Vue Language Features)
   - Tailwind CSS IntelliSense
-  - Prisma
   - ESLint
   - Prettier
   - Error Lens
   - GitLens
-- `launch.json` — Debug configurations for Nuxt, Node, tests
-- `snippets/` — Custom Vue 3, Nuxt, TypeScript snippets
-
-**Zed (`.zed/` included):**
-
-- `settings.json` — Modern editor optimized config
-- Language server settings for Vue, TypeScript
-- Fast startup, minimal configuration
+- `launch.json` — Debug Nuxt
+- `snippets/` — Vue 3, Nuxt, TypeScript snippets
 
 **AI Coding Assistants:**
 
-- `.cursorrules` — Rules for Cursor AI (project conventions, patterns)
-- `.github/copilot-instructions.md` — Context for GitHub Copilot
-- `.claude/` — Claude Code project rules:
-  - Architecture patterns to follow
-  - Code style guidelines
-  - Common tasks and solutions
-  - Component naming conventions
-- AI-friendly documentation in code comments
-
-**Dev Containers:**
-
-- `.devcontainer/devcontainer.json` — Full development environment
-- Pre-installed: Bun, Node, PostgreSQL, Redis
-- Works with GitHub Codespaces, VSCode Dev Containers
-- One-click setup for new contributors
+- `.cursorrules` — Cursor AI rules (patterns, conventions)
+- `.claude/` — Claude Code rules (CLAUDE.md in each dir)
 
 **Pre-commit Hooks:**
 
-- Husky + lint-staged configured
+- Husky + lint-staged
 - Auto-format on commit
 - Type checking before push
-- Conventional commits enforced
+- Conventional commits
+
+**No Docker/Postgres setup needed** — Pure client-side dev
 
 ---
 
-## 10) CLI & project scaffolding
+## 10) CLI & setup
 
-**Bistro CLI** — Fast project scaffolding and feature management
-
-**Core commands:**
+**No special CLI** — Standard Nuxt/Node setup:
 
 ```bash
-# Create new project
-bun create bistro my-saas
-bun create bistro my-saas --template minimal
-bun create bistro my-saas --template saas-full
+# Clone and start
+git clone https://github.com/alois/protocol
+cd protocol
+bun install
+bun run dev
 
-# Add features to existing project
-bistro add auth          # Add Better Auth
-bistro add payments      # Add Polar integration
-bistro add ai            # Add Vercel AI SDK setup
-bistro add email         # Add Resend templates
-bistro add blog          # Add Nuxt Content blog
+# Build for production
+bun run build
 
-# Project management
-bistro dev               # Start dev server
-bistro build             # Build for production
-bistro deploy            # Interactive deployment wizard
-bistro doctor            # Check project health
+# Deploy anywhere (static hosting)
+bun run build && deploy dist/
 ```
 
-**Templates:**
+**No scaffolding needed** — App is ready to fork/clone directly.
 
-- **minimal** — Barebones Nuxt 4 + Tailwind 4
-- **saas-basic** — Auth + DB + Nuxt UI
-- **saas-full** — Auth + AI + Payments + Email (recommended)
-- **ai-content** — AI-first content generation toolkit
-- **marketplace** — Multi-tenant marketplace setup
+**For contribution:**
 
-**Features:**
+```bash
+# Install with husky hooks
+bun install
 
-- Interactive prompts (like create-t3-app)
-- TypeScript-first code generation
-- Automatic dependency installation
-- Environment variable setup
-- Database migration on init
-- Git initialization
+# Run tests
+bun run test
+
+# Build for deployment
+bun run build
+```
 
 ---
 
