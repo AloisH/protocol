@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Protocol } from '#shared/db/schema';
 
-const props = defineProps<{
+defineProps<{
   protocol: Protocol;
 }>();
 
@@ -11,20 +11,20 @@ defineEmits<{
 }>();
 
 const statusColor = computed(() => {
-  switch (props.protocol?.status) {
+  switch (protocol?.status) {
     case 'active':
       return 'success';
     case 'paused':
       return 'warning';
     case 'completed':
-      return 'neutral';
+      return 'gray';
     default:
       return 'info';
   }
 });
 
 const durationLabel = computed(() => {
-  const freq = props.protocol?.duration;
+  const freq = protocol?.duration;
   return freq ? freq.charAt(0).toUpperCase() + freq.slice(1) : 'Unknown';
 });
 </script>
@@ -73,7 +73,7 @@ const durationLabel = computed(() => {
     <template #footer>
       <div class="flex gap-2 justify-end">
         <UButton
-          color="neutral"
+          color="gray"
           variant="ghost"
           size="sm"
           icon="i-lucide-edit"

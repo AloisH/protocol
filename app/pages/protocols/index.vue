@@ -7,14 +7,17 @@ useSeoMeta({
 });
 
 const { protocols, loading, createProtocol, updateProtocol, deleteProtocol } = useProtocols();
+const { loadActivities } = useActivities();
 
 const formOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedProtocol = ref<Protocol | null>(null);
 const isEditMode = ref(false);
+const expandedProtocols = ref<Set<string>>(new Set());
 
-onMounted(() => {
-  useProtocols().loadProtocols();
+onMounted(async () => {
+  await useProtocols().loadProtocols();
+  await loadActivities();
 });
 
 function openCreateForm() {
@@ -40,6 +43,17 @@ function openDeleteDialog(protocolOrId: Protocol | string) {
     selectedProtocol.value = protocolOrId;
   }
   deleteDialogOpen.value = true;
+}
+
+function toggleExpanded(protocolId: string) {
+  const newSet = new Set(expandedProtocols.value);
+  if (newSet.has(protocolId)) {
+    newSet.delete(protocolId);
+  }
+  else {
+    newSet.add(protocolId);
+  }
+  expandedProtocols.value = newSet;
 }
 
 async function handleFormSubmit(data: any) {
@@ -117,14 +131,16 @@ async function handleDeleteConfirm() {
       </UButton>
     </div>
 
-    <!-- Protocols Grid -->
-    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Protocols List -->
+    <div v-else class="space-y-3">
       <ProtocolCard
         v-for="protocol in protocols"
         :key="protocol.id"
         :protocol="protocol"
+        :expanded="expandedProtocols.has(protocol.id)"
         @edit="openEditForm"
         @delete="openDeleteDialog"
+        @toggle="toggleExpanded(protocol.id)"
       />
     </div>
   </div>

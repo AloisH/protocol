@@ -3,10 +3,11 @@ import { db } from '#shared/db/schema';
 import { nanoid } from 'nanoid';
 
 export function useDaily() {
-  const todaysProtocols = ref<Protocol[]>([]);
-  const completions = ref<DailyCompletion[]>([]);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  // Use useState for SSR-safe shared state
+  const todaysProtocols = useState<Protocol[]>('daily-protocols', () => []);
+  const completions = useState<DailyCompletion[]>('daily-completions', () => []);
+  const loading = useState<boolean>('daily-loading', () => false);
+  const error = useState<string | null>('daily-error', () => null);
 
   // Get today's date in YYYY-MM-DD format
   const today = computed(() => {
@@ -85,6 +86,8 @@ export function useDaily() {
 
   // Mark protocol as completed for today
   async function completeProtocol(protocolId: string, notes?: string) {
+    if (import.meta.server)
+      return;
     if (isCompletedToday(protocolId))
       return;
 
@@ -102,6 +105,9 @@ export function useDaily() {
 
   // Undo completion
   async function uncompleteProtocol(protocolId: string) {
+    if (import.meta.server)
+      return;
+
     const completion = completions.value.find(
       c => c.protocolId === protocolId && c.date === today.value,
     );
@@ -124,6 +130,9 @@ export function useDaily() {
 
   // Calculate streak for a protocol
   async function getStreak(protocolId: string): Promise<number> {
+    if (import.meta.server)
+      return 0;
+
     const protocol = todaysProtocols.value.find(p => p.id === protocolId);
     if (!protocol)
       return 0;
@@ -167,6 +176,9 @@ export function useDaily() {
 
   // Get completion rate for last N days
   async function getCompletionRate(protocolId: string, days = 30): Promise<number> {
+    if (import.meta.server)
+      return 0;
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     const startDateStr = startDate.toISOString().split('T')[0];
