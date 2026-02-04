@@ -35,7 +35,7 @@ describe('useProtocols', () => {
     await loadProtocols();
 
     expect(protocols.value).toHaveLength(1);
-    expect(protocols.value[0].name).toBe('Test Protocol');
+    expect(protocols.value[0]?.name).toBe('Test Protocol');
   });
 
   it('creates a new protocol', async () => {

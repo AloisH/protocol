@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { shortcuts } from '~/composables/shortcuts/useKeyboardShortcuts';
+import { shortcuts } from '../../composables/useKeyboardShortcuts';
 
 const isOpen = defineModel<boolean>('open', { default: false });
 
-const navigationShortcuts = computed(() => shortcuts.filter(s => s.category === 'navigation'));
+const navigationShortcuts = computed(() => shortcuts.filter((s: Shortcut) => s.category === 'navigation'));
 
-const modalShortcuts = computed(() => shortcuts.filter(s => s.category === 'modals'));
+const modalShortcuts = computed(() => shortcuts.filter((s: Shortcut) => s.category === 'modals'));
 
 // Helper component for shortcut rows
 const ShortcutRow = defineComponent({

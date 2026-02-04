@@ -38,7 +38,7 @@ onMounted(() => {
               actions: [
                 {
                   label: 'Reload',
-                  click: () => window.location.reload(),
+                  onClick: () => window.location.reload(),
                 },
               ],
             });
@@ -146,10 +146,10 @@ defineOgImageComponent('NuxtSeo', {
               </p>
             </div>
             <div class="flex gap-2">
-              <UButton variant="ghost" color="white" @click="showInstallPrompt = false">
+              <UButton variant="ghost" color="neutral" @click="showInstallPrompt = false">
                 Dismiss
               </UButton>
-              <UButton color="white" @click="installApp">
+              <UButton color="neutral" @click="installApp">
                 Install
               </UButton>
             </div>

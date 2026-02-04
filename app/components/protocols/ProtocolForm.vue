@@ -106,7 +106,7 @@ async function handleSubmit() {
         <UFormField name="duration" label="Frequency" required>
           <USelect
             v-model="state.duration"
-            :options="durationOptions"
+            :items="durationOptions"
             placeholder="Select frequency"
           />
         </UFormField>

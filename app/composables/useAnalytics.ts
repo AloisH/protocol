@@ -31,9 +31,7 @@ export function useAnalytics() {
       since.setDate(since.getDate() - days);
 
       const allLogs: TrackingLog[] = [];
-      // @ts-expect-error Dexie type resolution issue
       const query = db.trackingLogs.where('exerciseId').equals(exerciseId);
-      // @ts-expect-error Dexie type resolution issue
       for (const log of await query.toArray()) {
         const logDate = log instanceof Object && 'date' in log ? (log).date : new Date();
         if (logDate >= since) {
@@ -77,9 +75,7 @@ export function useAnalytics() {
       since.setDate(since.getDate() - days);
 
       const allLogs: TrackingLog[] = [];
-      // @ts-expect-error Dexie type resolution issue
       const query = db.trackingLogs.where('exerciseId').equals(exerciseId);
-      // @ts-expect-error Dexie type resolution issue
       for (const log of await query.toArray()) {
         const typedLog = log;
         if (typedLog.date >= since && typedLog.completed) {
@@ -141,15 +137,12 @@ export function useAnalytics() {
       const since = new Date();
       since.setDate(since.getDate() - days);
 
-      // @ts-expect-error Dexie type resolution issue
       const routines = await db.routines.where('protocolId').equals(protocolId).toArray();
       const routineIds = routines.map(r => r.id);
 
-      // @ts-expect-error Dexie type resolution issue
       const exercises = await db.exercises.filter(ex => routineIds.includes(ex.routineId)).toArray();
       const exerciseIds = exercises.map(ex => ex.id);
 
-      // @ts-expect-error Dexie type resolution issue
       const allLogs = await db.trackingLogs.toArray();
       const relevantLogs = allLogs.filter(log => exerciseIds.includes((log).exerciseId) && (log).date >= since);
 
