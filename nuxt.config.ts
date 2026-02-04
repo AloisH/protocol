@@ -48,9 +48,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL,
-    resendApiKey: process.env.RESEND_API_KEY,
-    resendFromEmail: process.env.RESEND_FROM_EMAIL,
     public: {
       appUrl: process.env.APP_URL || 'http://localhost:3000',
     },
@@ -70,11 +67,6 @@ export default defineNuxtConfig({
     '/changelog': { prerender: true },
     '/legal/**': { prerender: true },
     '/contact': { prerender: true },
-    // Protected routes - skip prerender
-    '/admin/**': { prerender: false },
-    '/onboarding/**': { prerender: false },
-    '/profile/**': { prerender: false },
-    '/org/**': { prerender: false },
   },
 
   compatibilityDate: '2025-01-15',
@@ -85,19 +77,6 @@ export default defineNuxtConfig({
     },
     experimental: {
       wasm: true,
-      openAPI: true,
-    },
-    openAPI: {
-      meta: {
-        title: 'Bistro API',
-        description: 'Nuxt 4 SaaS boilerplate API',
-        version: '1.0.0',
-      },
-      ui: {
-        scalar: {
-          route: '/api-docs',
-        },
-      },
     },
     prerender: {
       crawlLinks: true,
@@ -116,12 +95,7 @@ export default defineNuxtConfig({
       },
     },
     optimizeDeps: {
-      exclude: ['@prisma/client', '@prisma/adapter-pg'],
-    },
-    resolve: {
-      alias: {
-        '.prisma/client/index-browser': './node_modules/@prisma/client/index-browser.js',
-      },
+      exclude: [],
     },
   },
 

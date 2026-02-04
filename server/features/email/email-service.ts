@@ -4,7 +4,6 @@ import type { Component } from 'vue';
 import { sendEmailSchema } from '#shared/email';
 import { render } from '@vue-email/render';
 import { getLogger } from '../../utils/logger';
-import { log } from '../../utils/request-context';
 import { resend } from './email-client';
 import AccountDeletion from './templates/AccountDeletion.vue';
 import MagicLinkEmail from './templates/MagicLinkEmail.vue';
@@ -44,7 +43,7 @@ export class EmailService {
    */
   async sendEmail(options: SendEmailInput): Promise<{ id: string } | null> {
     if (!resend) {
-      log.warn('Email not sent - service not configured');
+      getLogger().warn('Email not sent - service not configured');
       return null;
     }
 
@@ -87,7 +86,7 @@ export class EmailService {
     options: SendTemplateEmailOptions<T>,
   ): Promise<{ id: string } | null> {
     if (!resend) {
-      log.warn('Email not sent - service not configured');
+      getLogger().warn('Email not sent - service not configured');
       return null;
     }
 
