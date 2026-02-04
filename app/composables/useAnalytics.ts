@@ -149,11 +149,8 @@ export function useAnalytics() {
       const byDate: Record<string, number> = {};
       relevantLogs.forEach((log) => {
         const typedLog = log;
-        const dateKey = typedLog.date.toISOString().split('T')[0];
-        if (!byDate[dateKey])
-          byDate[dateKey] = 0;
-        if (typedLog.completed)
-          byDate[dateKey] += 1;
+        const dateKey = typedLog.date.toISOString().split('T')[0] ?? '';
+        byDate[dateKey] = (byDate[dateKey] ?? 0) + (typedLog.completed ? 1 : 0);
       });
 
       return Object.entries(byDate).map(([date, completed]) => ({

@@ -84,6 +84,10 @@ export default defineNuxtConfig({
       headers: {
         'Cache-Control': 'no-store',
       },
+      watch: {
+        // Ignore .nuxt directory to prevent restart loops
+        ignored: ['**/.nuxt/**'],
+      },
     },
     optimizeDeps: {
       exclude: [],
@@ -98,12 +102,8 @@ export default defineNuxtConfig({
       },
     },
   },
-  hooks: {
-    close: (nuxt) => {
-      if (!nuxt.options._prepare)
-        process.exit(0);
-    },
-  },
+  // Removed process.exit hook - was causing CLI to stop on .nuxt/dist removal
+  // See: https://github.com/nuxt/nuxt/issues/33365
   // Image optimization
   image: {
     format: ['avif', 'webp'],

@@ -22,6 +22,6 @@ const baseEnvSchema = z.object({
 
 export type EnvConfig = z.infer<typeof baseEnvSchema>;
 
-export function validateEnv(env: Record<string, string | undefined>, isProduction: boolean) {
+export function validateEnv(env: Record<string, string | undefined>, _isProduction?: boolean) {
   return baseEnvSchema.safeParse(env);
 }

@@ -29,8 +29,16 @@ function openEditForm(protocol: Protocol) {
   formOpen.value = true;
 }
 
-function openDeleteDialog(protocol: Protocol) {
-  selectedProtocol.value = protocol;
+function openDeleteDialog(protocolOrId: Protocol | string) {
+  if (typeof protocolOrId === 'string') {
+    const protocol = protocols.value.find(p => p.id === protocolOrId);
+    if (protocol) {
+      selectedProtocol.value = protocol;
+    }
+  }
+  else {
+    selectedProtocol.value = protocolOrId;
+  }
   deleteDialogOpen.value = true;
 }
 

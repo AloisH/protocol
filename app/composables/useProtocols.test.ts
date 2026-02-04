@@ -44,8 +44,8 @@ describe('useProtocols', () => {
     await createProtocol('Neck Training', 'Daily exercises', 'daily', 'exercise');
 
     expect(protocols.value).toHaveLength(1);
-    expect(protocols.value[0].name).toBe('Neck Training');
-    expect(protocols.value[0].status).toBe('active');
+    expect(protocols.value[0]?.name).toBe('Neck Training');
+    expect(protocols.value[0]?.status).toBe('active');
   });
 
   it('updates a protocol', async () => {
@@ -55,7 +55,7 @@ describe('useProtocols', () => {
 
     await updateProtocol(protocol.id, { name: 'Updated' });
 
-    expect(protocols.value[0].name).toBe('Updated');
+    expect(protocols.value[0]?.name).toBe('Updated');
   });
 
   it('deletes a protocol', async () => {
@@ -73,11 +73,11 @@ describe('useProtocols', () => {
     const { createProtocol, archiveProtocol, protocols } = useProtocols();
 
     const protocol = await createProtocol('To Archive', 'Description', 'daily');
-    expect(protocols.value[0].status).toBe('active');
+    expect(protocols.value[0]?.status).toBe('active');
 
     await archiveProtocol(protocol.id);
 
-    expect(protocols.value[0].status).toBe('completed');
+    expect(protocols.value[0]?.status).toBe('completed');
   });
 
   it('sets error on invalid data', async () => {

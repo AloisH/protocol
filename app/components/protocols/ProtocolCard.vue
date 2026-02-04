@@ -30,10 +30,7 @@ const durationLabel = computed(() => {
 </script>
 
 <template>
-  <UCard
-    :ui="{ body: { padding: 'p-4 sm:p-6' } }"
-    class="hover:shadow-lg transition-shadow"
-  >
+  <UCard class="hover:shadow-lg transition-shadow">
     <!-- Header -->
     <template #header>
       <div class="flex items-start justify-between">
