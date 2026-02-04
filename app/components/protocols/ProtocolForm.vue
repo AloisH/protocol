@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import type { Protocol } from '~/shared/db/schema'
-import { ProtocolFormSchema } from '~/shared/schemas/protocols'
+import type { Protocol } from '#shared/db/schema';
+import { ProtocolFormSchema } from '#shared/schemas/protocols';
 
 interface Props {
-  protocol?: Protocol
-  open?: boolean
+  protocol?: Protocol;
+  open?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   open: false,
-})
+});
 
 const emit = defineEmits<{
-  submit: [data: any]
-  close: []
-}>()
+  submit: [data: any];
+  close: [];
+}>();
 
-const isEditMode = computed(() => !!props.protocol)
+const isEditMode = computed(() => !!props.protocol);
 
 const state = reactive({
   name: props.protocol?.name ?? '',
   description: props.protocol?.description ?? '',
   duration: (props.protocol?.duration ?? 'daily') as 'daily' | 'weekly' | 'monthly' | 'yearly',
-})
+});
 
-const loading = ref(false)
-const error = ref<string | null>(null)
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-const durationOptions = ['daily', 'weekly', 'monthly', 'yearly']
+const durationOptions = ['daily', 'weekly', 'monthly', 'yearly'];
 
-const schema = ProtocolFormSchema
+const schema = ProtocolFormSchema;
 
 async function handleSubmit() {
-  error.value = null
-  loading.value = true
+  error.value = null;
+  loading.value = true;
 
   try {
     // Validate
-    const validated = schema.parse(state)
+    const validated = schema.parse(state);
 
     // Call emit with validated data
-    emit('submit', validated)
+    emit('submit', validated);
 
     // Reset form on success
     if (!isEditMode.value) {
-      state.name = ''
-      state.description = ''
-      state.duration = 'daily'
+      state.name = '';
+      state.description = '';
+      state.duration = 'daily';
     }
   }
   catch (e) {
-    error.value = String(e)
-    console.error('Form validation error:', e)
+    error.value = String(e);
+    console.error('Form validation error:', e);
   }
   finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function handleClose() {
-  error.value = null
-  emit('close')
+  error.value = null;
+  emit('close');
 }
 </script>
 
@@ -120,8 +120,8 @@ function handleClose() {
         <div class="flex gap-2 justify-end pt-4">
           <UButton
             variant="ghost"
-            @click="handleClose"
             :disabled="loading"
+            @click="handleClose"
           >
             Cancel
           </UButton>

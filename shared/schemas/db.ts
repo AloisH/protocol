@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 export const ProtocolSchema = z.object({
   id: z.string().min(1, 'ID required'),
@@ -10,7 +10,7 @@ export const ProtocolSchema = z.object({
   targetMetric: z.string().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
 export const RoutineSchema = z.object({
   id: z.string().min(1, 'ID required'),
@@ -23,7 +23,7 @@ export const RoutineSchema = z.object({
   ]),
   timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
   notes: z.string().max(500).optional(),
-})
+});
 
 export const ExerciseSchema = z.object({
   id: z.string().min(1, 'ID required'),
@@ -34,7 +34,7 @@ export const ExerciseSchema = z.object({
   weight: z.number().positive().optional(),
   equipmentType: z.string().max(50).optional(),
   notes: z.string().max(500).optional(),
-})
+});
 
 export const TrackingLogSchema = z.object({
   id: z.string().min(1, 'ID required'),
@@ -48,17 +48,17 @@ export const TrackingLogSchema = z.object({
   energyLevel: z.number().int().min(1).max(10).optional(),
   difficultyFelt: z.number().int().min(1).max(10).optional(),
   notes: z.string().max(500).optional(),
-})
+});
 
 export const SettingsSchema = z.object({
   userId: z.string().min(1),
   theme: z.enum(['light', 'dark', 'auto']).default('auto'),
   notificationsEnabled: z.boolean().default(true),
   restDaySchedule: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
-})
+});
 
-export type ProtocolInput = z.infer<typeof ProtocolSchema>
-export type RoutineInput = z.infer<typeof RoutineSchema>
-export type ExerciseInput = z.infer<typeof ExerciseSchema>
-export type TrackingLogInput = z.infer<typeof TrackingLogSchema>
-export type SettingsInput = z.infer<typeof SettingsSchema>
+export type ProtocolInput = z.infer<typeof ProtocolSchema>;
+export type RoutineInput = z.infer<typeof RoutineSchema>;
+export type ExerciseInput = z.infer<typeof ExerciseSchema>;
+export type TrackingLogInput = z.infer<typeof TrackingLogSchema>;
+export type SettingsInput = z.infer<typeof SettingsSchema>;

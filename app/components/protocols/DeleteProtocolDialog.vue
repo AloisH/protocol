@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import type { Protocol } from '~/shared/db/schema'
+import type { Protocol } from '#shared/db/schema';
 
 interface Props {
-  protocol: Protocol | null
-  open?: boolean
+  protocol: Protocol | null;
+  open?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   open: false,
-})
+});
 
 const emit = defineEmits<{
-  confirm: []
-  cancel: []
-}>()
+  confirm: [];
+  cancel: [];
+}>();
 
-const loading = ref(false)
+const loading = ref(false);
 
 async function handleConfirm() {
-  loading.value = true
+  loading.value = true;
   try {
-    emit('confirm')
+    emit('confirm');
   }
   finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function handleCancel() {
-  emit('cancel')
+  emit('cancel');
 }
 </script>
 
@@ -41,7 +41,9 @@ function handleCancel() {
           <UIcon name="i-lucide-alert-triangle" class="text-red-600" />
         </div>
         <div>
-          <h3 class="text-lg font-bold">Delete Protocol?</h3>
+          <h3 class="text-lg font-bold">
+            Delete Protocol?
+          </h3>
           <p class="text-sm text-gray-500 mt-1">
             This action cannot be undone.
           </p>
@@ -50,7 +52,9 @@ function handleCancel() {
 
       <!-- Protocol Info -->
       <div v-if="protocol" class="bg-gray-50 p-4 rounded-lg">
-        <p class="font-semibold text-gray-900">{{ protocol.name }}</p>
+        <p class="font-semibold text-gray-900">
+          {{ protocol.name }}
+        </p>
         <p v-if="protocol.description" class="text-sm text-gray-600 mt-1">
           {{ protocol.description }}
         </p>
@@ -68,16 +72,16 @@ function handleCancel() {
       <div class="flex gap-3 justify-end">
         <UButton
           variant="ghost"
-          @click="handleCancel"
           :disabled="loading"
+          @click="handleCancel"
         >
           Keep It
         </UButton>
         <UButton
           color="red"
           :loading="loading"
-          @click="handleConfirm"
           icon="i-lucide-trash-2"
+          @click="handleConfirm"
         >
           Delete Protocol
         </UButton>

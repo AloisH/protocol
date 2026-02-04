@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import type { Protocol } from '~/shared/db/schema'
+import type { Protocol } from '#shared/db/schema';
 
 defineProps<{
-  protocol: Protocol
-}>()
+  protocol: Protocol;
+}>();
 
 defineEmits<{
-  edit: [protocol: Protocol]
-  delete: [id: string]
-}>()
+  edit: [protocol: Protocol];
+  delete: [id: string];
+}>();
 
 const statusColor = computed(() => {
   switch (protocol?.status) {
-    case 'active': return 'green'
-    case 'paused': return 'yellow'
-    case 'completed': return 'gray'
-    default: return 'blue'
+    case 'active': return 'green';
+    case 'paused': return 'yellow';
+    case 'completed': return 'gray';
+    default: return 'blue';
   }
-})
+});
 
 const durationLabel = computed(() => {
-  const freq = protocol?.duration
-  return freq ? freq.charAt(0).toUpperCase() + freq.slice(1) : 'Unknown'
-})
+  const freq = protocol?.duration;
+  return freq ? freq.charAt(0).toUpperCase() + freq.slice(1) : 'Unknown';
+});
 </script>
 
 <template>
@@ -34,7 +34,9 @@ const durationLabel = computed(() => {
     <template #header>
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <h3 class="font-bold text-lg truncate">{{ protocol.name }}</h3>
+          <h3 class="font-bold text-lg truncate">
+            {{ protocol.name }}
+          </h3>
           <p v-if="protocol.description" class="text-sm text-gray-500 mt-1 line-clamp-2">
             {{ protocol.description }}
           </p>

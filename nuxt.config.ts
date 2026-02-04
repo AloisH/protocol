@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     '@nuxtjs/sitemap',
     'nuxt-og-image',
-    '@vite-pwa/nuxt',
+    // '@vite-pwa/nuxt', // TODO: Fix PWA service worker path resolution
   ],
 
   // Auto-import components from nested feature directories
@@ -39,7 +39,7 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ['./app/assets/css/main.css'],
 
   // Sitemap configuration
   site: {
@@ -194,6 +194,5 @@ export default defineNuxtConfig({
       navigateFallbackDenylist: [/^\/api\//, /^\/__/],
     },
     strategies: 'injectManifest',
-    filename: 'sw.ts',
   },
 });

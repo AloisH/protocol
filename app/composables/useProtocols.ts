@@ -1,24 +1,25 @@
-import { db, type Protocol } from '~/shared/db/schema'
-import { ProtocolSchema } from '~/shared/schemas/db'
-import { nanoid } from 'nanoid'
+import type { Protocol } from '#shared/db/schema';
+import { db } from '#shared/db/schema';
+import { ProtocolSchema } from '#shared/schemas/db';
+import { nanoid } from 'nanoid';
 
 export function useProtocols() {
-  const protocols = ref<Protocol[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const protocols = ref<Protocol[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
   async function loadProtocols() {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
     try {
-      protocols.value = await db.protocols.toArray()
+      protocols.value = await db.protocols.toArray();
     }
     catch (e) {
-      error.value = `Failed to load protocols: ${String(e)}`
-      console.error(error.value, e)
+      error.value = `Failed to load protocols: ${String(e)}`;
+      console.error(error.value, e);
     }
     finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -28,7 +29,7 @@ export function useProtocols() {
     duration: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily',
     category: string = 'general',
   ) {
-    error.value = null
+    error.value = null;
     try {
       const protocol: Protocol = {
         id: nanoid(),
@@ -39,89 +40,89 @@ export function useProtocols() {
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      };
 
       // Validate
-      ProtocolSchema.parse(protocol)
+      ProtocolSchema.parse(protocol);
 
       // Add to DB
-      await db.protocols.add(protocol)
+      await db.protocols.add(protocol);
 
       // Reload
-      await loadProtocols()
-      return protocol
+      await loadProtocols();
+      return protocol;
     }
     catch (e) {
-      error.value = `Failed to create protocol: ${String(e)}`
-      console.error(error.value, e)
-      throw e
+      error.value = `Failed to create protocol: ${String(e)}`;
+      console.error(error.value, e);
+      throw e;
     }
   }
 
   async function updateProtocol(id: string, updates: Partial<Protocol>) {
-    error.value = null
+    error.value = null;
     try {
-      const existing = await db.protocols.get(id)
+      const existing = await db.protocols.get(id);
       if (!existing) {
-        throw new Error(`Protocol ${id} not found`)
+        throw new Error(`Protocol ${id} not found`);
       }
 
       const updated = {
         ...existing,
         ...updates,
         updatedAt: new Date(),
-      }
+      };
 
       // Validate
-      ProtocolSchema.parse(updated)
+      ProtocolSchema.parse(updated);
 
       // Update DB
-      await db.protocols.update(id, updated)
+      await db.protocols.update(id, updated);
 
       // Reload
-      await loadProtocols()
-      return updated
+      await loadProtocols();
+      return updated;
     }
     catch (e) {
-      error.value = `Failed to update protocol: ${String(e)}`
-      console.error(error.value, e)
-      throw e
+      error.value = `Failed to update protocol: ${String(e)}`;
+      console.error(error.value, e);
+      throw e;
     }
   }
 
   async function deleteProtocol(id: string) {
-    error.value = null
+    error.value = null;
     try {
-      await db.protocols.delete(id)
-      await loadProtocols()
+      await db.protocols.delete(id);
+      await loadProtocols();
     }
     catch (e) {
-      error.value = `Failed to delete protocol: ${String(e)}`
-      console.error(error.value, e)
-      throw e
+      error.value = `Failed to delete protocol: ${String(e)}`;
+      console.error(error.value, e);
+      throw e;
     }
   }
 
   async function getProtocolById(id: string): Promise<Protocol | undefined> {
     try {
-      return await db.protocols.get(id)
+      return await db.protocols.get(id);
     }
     catch (e) {
-      console.error(`Failed to get protocol ${id}:`, e)
-      return undefined
+      console.error(`Failed to get protocol ${id}:`, e);
+      return undefined;
     }
   }
 
   async function archiveProtocol(id: string) {
-    return updateProtocol(id, { status: 'completed' })
+    return updateProtocol(id, { status: 'completed' });
   }
 
   async function pauseProtocol(id: string) {
-    return updateProtocol(id, { status: 'paused' })
+    return updateProtocol(id, { status: 'paused' });
   }
 
   async function resumeProtocol(id: string) {
-    return updateProtocol(id, { status: 'active' })
+    return updateProtocol(id, { status: 'active' });
   }
 
   return {
@@ -139,5 +140,5 @@ export function useProtocols() {
     archiveProtocol,
     pauseProtocol,
     resumeProtocol,
-  }
+  };
 }

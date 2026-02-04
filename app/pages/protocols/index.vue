@@ -1,64 +1,64 @@
 <script setup lang="ts">
-import type { Protocol } from '~/shared/db/schema'
+import type { Protocol } from '#shared/db/schema';
 
 useSeoMeta({
   title: 'Protocols - Protocol',
   description: 'Manage your personal routines and protocols',
-})
+});
 
-const { protocols, loading, createProtocol, updateProtocol, deleteProtocol } = useProtocols()
+const { protocols, loading, createProtocol, updateProtocol, deleteProtocol } = useProtocols();
 
-const formOpen = ref(false)
-const deleteDialogOpen = ref(false)
-const selectedProtocol = ref<Protocol | null>(null)
-const isEditMode = ref(false)
+const formOpen = ref(false);
+const deleteDialogOpen = ref(false);
+const selectedProtocol = ref<Protocol | null>(null);
+const isEditMode = ref(false);
 
 onMounted(() => {
-  useProtocols().loadProtocols()
-})
+  useProtocols().loadProtocols();
+});
 
 function openCreateForm() {
-  selectedProtocol.value = null
-  isEditMode.value = false
-  formOpen.value = true
+  selectedProtocol.value = null;
+  isEditMode.value = false;
+  formOpen.value = true;
 }
 
 function openEditForm(protocol: Protocol) {
-  selectedProtocol.value = protocol
-  isEditMode.value = true
-  formOpen.value = true
+  selectedProtocol.value = protocol;
+  isEditMode.value = true;
+  formOpen.value = true;
 }
 
 function openDeleteDialog(protocol: Protocol) {
-  selectedProtocol.value = protocol
-  deleteDialogOpen.value = true
+  selectedProtocol.value = protocol;
+  deleteDialogOpen.value = true;
 }
 
 async function handleFormSubmit(data: any) {
   try {
     if (isEditMode.value && selectedProtocol.value) {
-      await updateProtocol(selectedProtocol.value.id, data)
+      await updateProtocol(selectedProtocol.value.id, data);
     }
     else {
-      await createProtocol(data.name, data.description, data.duration)
+      await createProtocol(data.name, data.description, data.duration);
     }
-    formOpen.value = false
-    selectedProtocol.value = null
+    formOpen.value = false;
+    selectedProtocol.value = null;
   }
   catch (e) {
-    console.error('Form submission error:', e)
+    console.error('Form submission error:', e);
   }
 }
 
 async function handleDeleteConfirm() {
   if (selectedProtocol.value) {
     try {
-      await deleteProtocol(selectedProtocol.value.id)
-      deleteDialogOpen.value = false
-      selectedProtocol.value = null
+      await deleteProtocol(selectedProtocol.value.id);
+      deleteDialogOpen.value = false;
+      selectedProtocol.value = null;
     }
     catch (e) {
-      console.error('Delete error:', e)
+      console.error('Delete error:', e);
     }
   }
 }
@@ -69,8 +69,12 @@ async function handleDeleteConfirm() {
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold">Protocols</h1>
-        <p class="text-gray-600 mt-1">Create and manage your personal routines</p>
+        <h1 class="text-3xl font-bold">
+          Protocols
+        </h1>
+        <p class="text-gray-600 mt-1">
+          Create and manage your personal routines
+        </p>
       </div>
       <UButton
         icon="i-lucide-plus"
@@ -91,8 +95,12 @@ async function handleDeleteConfirm() {
       <div class="flex justify-center mb-4">
         <UIcon name="i-lucide-inbox" class="text-gray-300 w-16 h-16" />
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">No protocols yet</h3>
-      <p class="text-gray-600 mb-6">Get started by creating your first protocol</p>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">
+        No protocols yet
+      </h3>
+      <p class="text-gray-600 mb-6">
+        Get started by creating your first protocol
+      </p>
       <UButton
         icon="i-lucide-plus"
         @click="openCreateForm"
