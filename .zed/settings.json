@@ -1,0 +1,43 @@
+{
+  "formatter": "language_server",
+  "format_on_save": "on",
+  "languages": {
+    "JavaScript": {
+      "language_servers": ["eslint"],
+      "formatter": "language_server"
+    },
+    "TypeScript": {
+      "language_servers": ["typescript-language-server", "eslint"],
+      "formatter": "language_server"
+    },
+    "Vue.js": {
+      "language_servers": ["vue-language-server", "eslint"],
+      "formatter": "language_server"
+    },
+    "JSON": {
+      "language_servers": ["eslint"],
+      "formatter": "language_server"
+    },
+    "JSONC": {
+      "language_servers": ["eslint"],
+      "formatter": "language_server"
+    },
+    "Markdown": {
+      "language_servers": ["eslint"],
+      "formatter": "language_server"
+    },
+    "YAML": {
+      "language_servers": ["eslint"],
+      "formatter": "language_server"
+    }
+  },
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "codeActionOnSave": {
+          "rules": ["!style/*", "!format/*", "!*-indent", "!*-spacing", "!*-spaces", "!*-order", "!*-dangle", "!*-newline", "!*quotes", "!*semi"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+# Environment
+.env
+.env.local
+.env.*.local
+.env.docker
+
+# Dependencies
+node_modules/
+
+# Lockfiles (bun.lock is tracked)
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+.nuxt/
+.output/
+.nitro/
+.data/
+dist/
+
+# Cache
+.cache/
+.turbo
+.temp
+cache
+*.tsbuildinfo
+.eslintcache
+
+# Logs
+*.log
+logs/
+
+# Coverage & Testing
+coverage/
+lib-cov
+.nyc_output/
+playwright-report/
+test-results/
+
+# IDE / Editor
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Package artifacts
+*.tgz
+
+# Docker
+docker-compose.override.yml
+
+# Vercel
+.vercel
+
+# Sentry
+.sentryclirc
+
+# Local development
+.local/

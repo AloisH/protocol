@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /org/
+Disallow: /api/
+Disallow: /onboarding/
+Sitemap: https://bistro.dev/sitemap.xml

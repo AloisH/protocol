@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.nuxt
+.output
+dist
+build
+.next
+
+# Cache
+.turbo
+.cache
+.parcel-cache
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Misc
+coverage
+**/coverage/**
+.DS_Store
+*.lock
+bun.lockb
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Prisma
+prisma/migrations
+**/prisma/generated/**

@@ -1,0 +1,25 @@
+FROM oven/bun:1-alpine
+WORKDIR /app
+
+# Install OpenSSL (required by Prisma engine)
+RUN apk add --no-cache openssl openssl-dev
+
+# Install ONLY Prisma packages (no package.json)
+# Sync version with package.json when upgrading
+RUN bun add -d prisma@7.0.1 && \
+    bun add @prisma/client@7.0.1
+
+# Copy Prisma configuration and schema
+COPY --chown=bun:bun prisma.config.ts ./
+COPY --chown=bun:bun prisma/ ./prisma/
+
+# Generate Prisma Client
+# Dummy DATABASE_URL for generation (doesn't actually connect)
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
+RUN bunx prisma generate --schema=prisma/schema.prisma
+
+# Switch to non-root user
+USER bun
+
+# Run migrations on container start
+ENTRYPOINT ["bunx", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
