@@ -49,39 +49,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL,
-    authSecret: process.env.AUTH_SECRET,
-    githubClientId: process.env.GITHUB_CLIENT_ID,
-    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
-    googleClientId: process.env.GOOGLE_CLIENT_ID,
-    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     resendApiKey: process.env.RESEND_API_KEY,
     resendFromEmail: process.env.RESEND_FROM_EMAIL,
     public: {
       appUrl: process.env.APP_URL || 'http://localhost:3000',
-      oauthGithubEnabled: !!process.env.GITHUB_CLIENT_ID && !!process.env.GITHUB_CLIENT_SECRET,
-      oauthGoogleEnabled: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
-      authCallbackUrl: '/org/select',
-      publicRoutes: [
-        '/',
-        '/auth/login',
-        '/auth/register',
-        '/auth/verify-email',
-        '/auth/forgot-password',
-        '/auth/forgot-password-sent',
-        '/auth/reset-password',
-        '/auth/magic-link',
-        '/auth/magic-link-sent',
-        '/api/auth/verify-email',
-        '/blog',
-        '/blog/*',
-        '/docs',
-        '/docs/*',
-        '/legal/privacy',
-        '/legal/terms',
-        '/changelog',
-        '/changelog/*',
-        '/contact',
-      ],
     },
   },
 
@@ -218,7 +189,7 @@ export default defineNuxtConfig({
     strict: process.env.NODE_ENV === 'production',
   },
   sitemap: {
-    exclude: ['/auth/**', '/admin/**', '/org/**', '/api/**', '/onboarding/**'],
+    exclude: ['/admin/**', '/org/**', '/api/**', '/onboarding/**'],
     sources: ['/api/__sitemap__/urls'],
   },
 });

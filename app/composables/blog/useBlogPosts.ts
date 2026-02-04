@@ -14,7 +14,6 @@ export async function useBlogPosts(options: { limit?: number } = {}) {
 
   const route = useRoute();
   const router = useRouter();
-  const { isAdmin } = useRole();
 
   const currentPage = ref(Number.parseInt((route.query.page as string) || '1'));
   const selectedTag = ref((route.query.tag as string) || '');
@@ -30,7 +29,6 @@ export async function useBlogPosts(options: { limit?: number } = {}) {
       page: currentPage.value,
       limit,
       tag: selectedTag.value || undefined,
-      includeDrafts: isAdmin.value,
     })),
     watch: false,
   });
