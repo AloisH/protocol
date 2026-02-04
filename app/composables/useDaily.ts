@@ -46,6 +46,10 @@ export function useDaily() {
 
   // Load today's protocols and completions
   async function loadToday() {
+    // Skip on server - IndexedDB not available
+    if (import.meta.server)
+      return;
+
     loading.value = true;
     error.value = null;
 

@@ -6,8 +6,10 @@ useSeoMeta({
 
 const { todaysProtocols, loading, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
 const streaks = ref<Record<string, number>>({});
+const isClient = ref(false);
 
 onMounted(async () => {
+  isClient.value = true;
   await loadToday();
   // Load streaks for all protocols
   for (const protocol of todaysProtocols.value) {
@@ -17,6 +19,8 @@ onMounted(async () => {
 
 // Reload streaks when completions change
 watch(() => todaysProtocols.value, async () => {
+  if (!isClient.value)
+    return;
   for (const protocol of todaysProtocols.value) {
     streaks.value[protocol.id] = await getStreak(protocol.id);
   }
