@@ -6,7 +6,7 @@ useSeoMeta({
   description: 'Manage your personal routines and protocols',
 });
 
-const { protocols, loading, createProtocol, updateProtocol, deleteProtocol } = useProtocols();
+const { protocols, loading, createProtocol, updateProtocol, deleteProtocol, loadProtocols } = useProtocols();
 const { loadActivities } = useActivities();
 
 const formOpen = ref(false);
@@ -16,7 +16,7 @@ const isEditMode = ref(false);
 const expandedProtocols = ref<Set<string>>(new Set());
 
 onMounted(async () => {
-  await useProtocols().loadProtocols();
+  await loadProtocols();
   await loadActivities();
 });
 
