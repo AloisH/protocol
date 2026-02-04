@@ -57,20 +57,15 @@ async function handleSubmit() {
   loading.value = true;
 
   try {
-    // Validate
     const validated = schema.parse(state);
-
-    // Emit data
     emit('submit', validated);
 
-    // Reset form on success if creating
     if (!isEditMode.value) {
       state.name = '';
       state.description = '';
       state.duration = 'daily';
     }
 
-    // Close modal
     isOpen.value = false;
   }
   catch (e) {
@@ -80,11 +75,6 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
-
-function handleCancel() {
-  error.value = null;
-  isOpen.value = false;
-}
 </script>
 
 <template>
@@ -92,67 +82,64 @@ function handleCancel() {
     v-model:open="isOpen"
     :title="isEditMode ? 'Edit Protocol' : 'Create Protocol'"
     :description="isEditMode ? 'Update your protocol details' : 'Set up a new routine or protocol'"
+    :ui="{ footer: 'justify-end' }"
   >
-    <!-- Form Body -->
-    <UForm :state="state" :schema="schema" class="space-y-4" @submit="handleSubmit">
-      <!-- Name Field -->
-      <UFormField name="name" label="Protocol Name" required>
-        <UInput
-          v-model="state.name"
-          placeholder="e.g., Neck Training"
-          icon="i-lucide-zap"
+    <!-- Body slot for form content -->
+    <template #body>
+      <UForm :state="state" :schema="schema" class="space-y-4" @submit="handleSubmit">
+        <UFormField name="name" label="Protocol Name" required>
+          <UInput
+            v-model="state.name"
+            placeholder="e.g., Neck Training"
+            icon="i-lucide-zap"
+          />
+        </UFormField>
+
+        <UFormField name="description" label="Description">
+          <UTextarea
+            v-model="state.description"
+            placeholder="Describe your protocol..."
+            :rows="3"
+          />
+        </UFormField>
+
+        <UFormField name="duration" label="Frequency" required>
+          <USelect
+            v-model="state.duration"
+            :options="durationOptions"
+            placeholder="Select frequency"
+          />
+        </UFormField>
+
+        <UAlert
+          v-if="error"
+          title="Validation Error"
+          :description="error"
+          color="error"
+          icon="i-lucide-alert-circle"
+          variant="soft"
         />
-      </UFormField>
+      </UForm>
+    </template>
 
-      <!-- Description Field -->
-      <UFormField name="description" label="Description">
-        <UTextarea
-          v-model="state.description"
-          placeholder="Describe your protocol..."
-          rows="3"
-        />
-      </UFormField>
-
-      <!-- Duration Field -->
-      <UFormField name="duration" label="Frequency" required>
-        <USelect
-          v-model="state.duration"
-          :options="durationOptions"
-          placeholder="Select frequency"
-        />
-      </UFormField>
-
-      <!-- Error Alert -->
-      <UAlert
-        v-if="error"
-        title="Validation Error"
-        :description="error"
-        color="error"
-        icon="i-lucide-alert-circle"
-        variant="soft"
-      />
-    </UForm>
-
-    <!-- Footer Actions -->
-    <template #footer>
-      <div class="flex gap-3 justify-end">
-        <UButton
-          color="gray"
-          variant="ghost"
-          :disabled="loading"
-          @click="handleCancel"
-        >
-          Cancel
-        </UButton>
-        <UButton
-          color="primary"
-          :loading="loading"
-          icon="i-lucide-check"
-          @click="handleSubmit"
-        >
-          {{ isEditMode ? 'Update' : 'Create' }}
-        </UButton>
-      </div>
+    <!-- Footer slot for actions -->
+    <template #footer="{ close }">
+      <UButton
+        color="neutral"
+        variant="outline"
+        :disabled="loading"
+        @click="close"
+      >
+        Cancel
+      </UButton>
+      <UButton
+        color="primary"
+        :loading="loading"
+        icon="i-lucide-check"
+        @click="handleSubmit"
+      >
+        {{ isEditMode ? 'Update' : 'Create' }}
+      </UButton>
     </template>
   </UModal>
 </template>
