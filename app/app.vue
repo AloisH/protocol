@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 const config = useRuntimeConfig();
 const siteUrl = config.public.appUrl || 'http://localhost:3000';
 
