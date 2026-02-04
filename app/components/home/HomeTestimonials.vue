@@ -4,19 +4,19 @@ const testimonials = [
     name: 'Sarah Chen',
     role: 'Indie Developer',
     quote:
-      'Finally, a todo app that doesn\'t try to do everything. Bistro is simple, fast, and just works. Perfect for my daily workflow.',
+      'Finally, a PWA that runs completely offline. No dependencies on cloud services, just pure local storage. Perfect for privacy-conscious users.',
   },
   {
     name: 'Marcus Johnson',
     role: 'Startup Founder',
     quote:
-      'We switched our team to Bistro and productivity went up. The organization features are exactly what we needed without the bloat.',
+      'The simplicity is refreshing. No authentication overhead, no server costs, no vendor lock-in. Just a clean, fast web app.',
   },
   {
     name: 'Emily Rodriguez',
     role: 'Open Source Contributor',
     quote:
-      'Love that it\'s open source! I can self-host it, customize it, and trust that my data stays mine. The codebase is clean too.',
+      'Love that it\'s open source and runs locally! I can fork it, customize it, and trust that my data never leaves my device.',
   },
 ];
 </script>
