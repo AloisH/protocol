@@ -6,9 +6,9 @@ const siteUrl = config.public.appUrl || 'http://localhost:3000';
 const softwareSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  'name': 'Bistro',
+  'name': 'Protocol',
   'description':
-    'Free, open-source local-first PWA built with Nuxt 4. Runs completely on your device with no backend required.',
+    'Protocol - Personal routine tracking PWA. Set up daily, weekly, or yearly protocols and track your progress locally.',
   'url': siteUrl,
   'applicationCategory': 'ProductivityApplication',
   'operatingSystem': 'Web',
@@ -19,7 +19,7 @@ const softwareSchema = {
   },
   'author': {
     '@type': 'Organization',
-    'name': 'Bistro',
+    'name': 'Protocol',
     'url': siteUrl,
   },
 };

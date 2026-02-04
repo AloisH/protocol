@@ -2,7 +2,7 @@
  * Centralized SEO composable for consistent meta tag handling
  */
 export interface SeoOptions {
-  /** Page title - " - Bistro" appended if not present */
+  /** Page title - " - Protocol" appended if not present */
   title: string;
   /** Page description for meta and OG tags */
   description: string;
@@ -25,8 +25,8 @@ export function useSeo(options: SeoOptions) {
   const config = useRuntimeConfig();
   const siteUrl = config.public.appUrl || 'http://localhost:3000';
 
-  // Auto-append " - Bistro" if not present
-  const fullTitle = options.title.includes('Bistro') ? options.title : `${options.title} - Bistro`;
+  // Auto-append " - Protocol" if not present
+  const fullTitle = options.title.includes('Protocol') ? options.title : `${options.title} - Protocol`;
 
   // Use provided image or let nuxt-og-image generate dynamically
   const hasCustomImage = !!options.image;
@@ -86,7 +86,7 @@ export function useSeo(options: SeoOptions) {
       }),
       'publisher': {
         '@type': 'Organization',
-        'name': 'Bistro',
+        'name': 'Protocol',
         'url': siteUrl,
       },
     };

@@ -1,6 +1,6 @@
-# Bistro
+# Protocol
 
-Nuxt 4 SaaS boilerplate with multi-tenancy, RBAC, Better Auth, Prisma 7.
+Local-first PWA for personal routine tracking. Set up and monitor daily, weekly, monthly, or yearly protocols.
 
 ## Commands
 
@@ -12,20 +12,16 @@ bun run test:integration # Integration tests
 bun run lint             # ESLint
 bun run typecheck        # TypeScript check
 bun run build            # Production build
-bun run db:migrate       # Run migrations
-bun run db:generate      # Generate Prisma client
-bun run db:studio        # Prisma Studio
-docker compose up -d     # Start postgres + redis
 ```
 
 **Run from repo root.**
 
 ## Critical Rules
 
-1. **DB singleton** - Always `import { db } from '~/server/utils/db'`, never `new PrismaClient()`
-2. **User-scope queries** - All data queries MUST filter by `userId` or `organizationId`
-3. **Zod validation** - Use schemas from `#shared/schemas/*`, no type assertions (`as`)
-4. **Composition API** - `<script setup>` only, no Options API
+1. **Composition API** - `<script setup>` only, no Options API
+2. **Zod validation** - Use schemas from `#shared/schemas/*`, no type assertions (`as`)
+3. **Local-first** - All data in IndexedDB via Dexie.js
+4. **No backend calls** - PWA is fully client-side
 
 ## Workflow
 
@@ -36,32 +32,21 @@ docker compose up -d     # Start postgres + redis
 
 ## Documentation
 
-**System docs & SOPs:**
-
-- [.agent/README.md](.agent/README.md) - Index of all documentation
-
-**Context-specific (read when working in that area):**
-
-- [server/CLAUDE.md](server/CLAUDE.md) - API patterns, auth, DB
-- [app/CLAUDE.md](app/CLAUDE.md) - Pages, components, composables
+- [README.md](README.md) - Project overview
+- [.agent/README.md](.agent/README.md) - System documentation index
 
 ## Structure
 
 ```
 app/            # Pages, components, composables
-server/         # API routes, features (service + repository)
-shared/         # Zod schemas (#shared alias)
-prisma/         # Schema, migrations
-content/        # Blog/docs content
-.agent/         # System docs, SOPs
+shared/         # Zod schemas
+public/         # Static assets
 ```
 
-## Quick Troubleshooting
+## Stack
 
-| Issue                 | Fix                                    |
-| --------------------- | -------------------------------------- |
-| Prisma types wrong    | `bun db:generate`                      |
-| DB connection failed  | `docker compose up -d`                 |
-| CI fails, local works | Run `bun db:generate` before typecheck |
-
-See [.agent/SOP/troubleshooting.md](.agent/SOP/troubleshooting.md) for more.
+- **Nuxt 4** — Full-stack framework
+- **Dexie.js** — IndexedDB wrapper
+- **Nuxt UI** — Component library
+- **Tailwind 4** — Styling
+- **Vite PWA** — Progressive Web App

@@ -1,10 +1,10 @@
 {
-  "name": "bistro",
+  "name": "protocol",
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Free, open-source Nuxt 4 starter kit for AI-powered SaaS",
-  "author": "Bistro Contributors",
+  "description": "Protocol - Personal routine tracking PWA",
+  "author": "Protocol Contributors",
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0",
