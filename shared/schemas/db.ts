@@ -95,10 +95,20 @@ export const SettingsSchema = z.object({
   restDaySchedule: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
 });
 
+export const DailyCompletionSchema = z.object({
+  id: z.string().min(1, 'ID required'),
+  protocolId: z.string().min(1, 'Protocol ID required'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
+  completedAt: z.coerce.date(),
+  notes: z.string().max(500).optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+});
+
 export type ProtocolInput = z.infer<typeof ProtocolSchema>;
 export type ActivityInput = z.infer<typeof ActivitySchema>;
 export type TrackingLogInput = z.infer<typeof TrackingLogSchema>;
 export type SettingsInput = z.infer<typeof SettingsSchema>;
+export type DailyCompletionInput = z.infer<typeof DailyCompletionSchema>;
 
 /** @deprecated Use ActivityInput instead */
 export type RoutineInput = z.infer<typeof RoutineSchema>;

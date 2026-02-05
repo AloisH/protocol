@@ -92,6 +92,7 @@ export interface DailyCompletion {
   date: string; // YYYY-MM-DD format for easy querying
   completedAt: Date;
   notes?: string;
+  rating?: number; // 1-5 session rating
 }
 
 export class ProtocolDB extends Dexie {

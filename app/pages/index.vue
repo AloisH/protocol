@@ -1,16 +1,24 @@
 <script setup lang="ts">
+import type { Protocol } from '#shared/db/schema';
+
 useSeoMeta({
   title: 'Today - Protocol',
   description: 'Track your daily protocols and monitor progress.',
 });
 
-const { todaysProtocols, loading, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
+const { todaysProtocols, loading, progress, loadToday, isCompletedToday, getStreak } = useDaily();
+const { loadActivities } = useActivities();
 const streaks = ref<Record<string, number>>({});
 const isClient = ref(false);
+
+// Session modal state
+const sessionModalOpen = ref(false);
+const activeProtocol = ref<Protocol | null>(null);
 
 onMounted(async () => {
   isClient.value = true;
   await loadToday();
+  await loadActivities();
   // Load streaks for all protocols
   for (const protocol of todaysProtocols.value) {
     streaks.value[protocol.id] = await getStreak(protocol.id);
@@ -26,10 +34,17 @@ watch(() => todaysProtocols.value, async () => {
   }
 });
 
-async function handleToggle(protocolId: string) {
-  await toggleCompletion(protocolId);
-  // Update streak
-  streaks.value[protocolId] = await getStreak(protocolId);
+function openSession(protocol: Protocol) {
+  activeProtocol.value = protocol;
+  sessionModalOpen.value = true;
+}
+
+async function onSessionSaved() {
+  await loadToday();
+  // Update streaks
+  for (const protocol of todaysProtocols.value) {
+    streaks.value[protocol.id] = await getStreak(protocol.id);
+  }
 }
 
 const formattedDate = computed(() => {
@@ -125,7 +140,7 @@ const formattedDate = computed(() => {
               ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
               : 'hover:border-gray-300 dark:hover:border-gray-600',
           ]"
-          @click="handleToggle(protocol.id)"
+          @click="openSession(protocol)"
         >
           <div class="flex items-center gap-4">
             <!-- Checkbox -->
@@ -183,5 +198,12 @@ const formattedDate = computed(() => {
         Analytics
       </UButton>
     </div>
+
+    <!-- Session Modal -->
+    <SessionModal
+      v-model="sessionModalOpen"
+      :protocol="activeProtocol"
+      @saved="onSessionSaved"
+    />
   </div>
 </template>
