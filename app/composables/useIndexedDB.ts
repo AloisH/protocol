@@ -1,4 +1,6 @@
+import type { ExportData } from '#shared/schemas/export';
 import { db } from '#shared/db/schema';
+import { ExportDataSchema } from '#shared/schemas/export';
 
 export function useIndexedDB() {
   const dbInfo = ref<{
@@ -30,13 +32,9 @@ export function useIndexedDB() {
           count = await db.protocols.count();
           sample = await db.protocols.limit(1).toArray();
           break;
-        case 'routines':
-          count = await db.routines.count();
-          sample = await db.routines.limit(1).toArray();
-          break;
-        case 'exercises':
-          count = await db.exercises.count();
-          sample = await db.exercises.limit(1).toArray();
+        case 'activities':
+          count = await db.activities.count();
+          sample = await db.activities.limit(1).toArray();
           break;
         case 'trackingLogs':
           count = await db.trackingLogs.count();
@@ -45,6 +43,10 @@ export function useIndexedDB() {
         case 'settings':
           count = await db.settings.count();
           sample = await db.settings.limit(1).toArray();
+          break;
+        case 'dailyCompletions':
+          count = await db.dailyCompletions.count();
+          sample = await db.dailyCompletions.limit(1).toArray();
           break;
         default:
           throw new Error(`Table ${tableName} not found`);
@@ -64,17 +66,17 @@ export function useIndexedDB() {
         case 'protocols':
           await db.protocols.clear();
           break;
-        case 'routines':
-          await db.routines.clear();
-          break;
-        case 'exercises':
-          await db.exercises.clear();
+        case 'activities':
+          await db.activities.clear();
           break;
         case 'trackingLogs':
           await db.trackingLogs.clear();
           break;
         case 'settings':
           await db.settings.clear();
+          break;
+        case 'dailyCompletions':
+          await db.dailyCompletions.clear();
           break;
         default:
           throw new Error(`Table ${tableName} not found`);
@@ -91,10 +93,10 @@ export function useIndexedDB() {
     try {
       await Promise.all([
         db.protocols.clear(),
-        db.routines.clear(),
-        db.exercises.clear(),
+        db.activities.clear(),
         db.trackingLogs.clear(),
         db.settings.clear(),
+        db.dailyCompletions.clear(),
       ]);
       return true;
     }
@@ -104,14 +106,18 @@ export function useIndexedDB() {
     }
   }
 
-  async function exportData() {
+  async function exportData(): Promise<ExportData | null> {
     try {
-      const data = {
-        protocols: await db.protocols.toArray(),
-        routines: await db.routines.toArray(),
-        exercises: await db.exercises.toArray(),
-        trackingLogs: await db.trackingLogs.toArray(),
-        settings: await db.settings.toArray(),
+      const data: ExportData = {
+        version: 1,
+        exportedAt: new Date(),
+        data: {
+          protocols: await db.protocols.toArray(),
+          activities: await db.activities.toArray(),
+          trackingLogs: await db.trackingLogs.toArray(),
+          settings: await db.settings.toArray(),
+          dailyCompletions: await db.dailyCompletions.toArray(),
+        },
       };
       return data;
     }
@@ -121,40 +127,83 @@ export function useIndexedDB() {
     }
   }
 
-  async function importData(data: {
-    protocols?: unknown[];
-    routines?: unknown[];
-    exercises?: unknown[];
-    trackingLogs?: unknown[];
-    settings?: unknown[];
-  }) {
+  function downloadExport(data: ExportData) {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const date = new Date().toISOString().split('T')[0];
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `protocol-backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function validateImport(data: unknown): { success: true; data: ExportData } | { success: false; error: string } {
+    const result = ExportDataSchema.safeParse(data);
+    if (!result.success) {
+      const issues = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+      return { success: false, error: issues };
+    }
+    return { success: true, data: result.data };
+  }
+
+  async function importData(
+    data: ExportData,
+    mode: 'merge' | 'replace' = 'merge',
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      await db.transaction('rw', db.protocols, db.routines, db.exercises, db.trackingLogs, db.settings, async () => {
-        if (data.protocols?.length)
-          await db.protocols.bulkAdd(data.protocols);
-        if (data.routines?.length)
-          await db.routines.bulkAdd(data.routines);
-        if (data.exercises?.length)
-          await db.exercises.bulkAdd(data.exercises);
-        if (data.trackingLogs?.length)
-          await db.trackingLogs.bulkAdd(data.trackingLogs);
-        if (data.settings?.length)
-          await db.settings.bulkAdd(data.settings);
+      await db.transaction('rw', db.protocols, db.activities, db.trackingLogs, db.settings, db.dailyCompletions, async () => {
+        if (mode === 'replace') {
+          await Promise.all([
+            db.protocols.clear(),
+            db.activities.clear(),
+            db.trackingLogs.clear(),
+            db.settings.clear(),
+            db.dailyCompletions.clear(),
+          ]);
+        }
+
+        const { protocols, activities, trackingLogs, settings, dailyCompletions } = data.data;
+
+        if (mode === 'replace') {
+          if (protocols.length)
+            await db.protocols.bulkAdd(protocols);
+          if (activities.length)
+            await db.activities.bulkAdd(activities);
+          if (trackingLogs.length)
+            await db.trackingLogs.bulkAdd(trackingLogs);
+          if (settings.length)
+            await db.settings.bulkAdd(settings);
+          if (dailyCompletions.length)
+            await db.dailyCompletions.bulkAdd(dailyCompletions);
+        }
+        else {
+          // Merge: use bulkPut to upsert
+          if (protocols.length)
+            await db.protocols.bulkPut(protocols);
+          if (activities.length)
+            await db.activities.bulkPut(activities);
+          if (trackingLogs.length)
+            await db.trackingLogs.bulkPut(trackingLogs);
+          if (settings.length)
+            await db.settings.bulkPut(settings);
+          if (dailyCompletions.length)
+            await db.dailyCompletions.bulkPut(dailyCompletions);
+        }
       });
-      return true;
+      return { success: true };
     }
     catch (e) {
       console.error('Failed to import data:', e);
-      return false;
+      return { success: false, error: e instanceof Error ? e.message : 'Import failed' };
     }
   }
 
-  // Debug: log all data to console
   async function debugLogAllData() {
     const data = await exportData();
     if (data) {
       console.warn('Database export:', data);
-      console.warn('Full data export:', JSON.stringify(data, null, 2));
     }
   }
 
@@ -165,6 +214,8 @@ export function useIndexedDB() {
     clearTable,
     clearAllData,
     exportData,
+    downloadExport,
+    validateImport,
     importData,
     debugLogAllData,
   };
