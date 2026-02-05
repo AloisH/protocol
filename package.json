@@ -36,12 +36,14 @@
     "@nuxt/ui": "^4.3.0",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vitejs/plugin-vue": "^6.0.3",
+    "chart.js": "^4.5.1",
     "dexie": "^4.0.8",
     "fuse.js": "^7.1.0",
     "nanoid": "^5.1.6",
     "nuxt": "^4.2.2",
     "sortablejs": "^1.15.6",
     "ua-parser-js": "^2.0.8",
+    "vue-chartjs": "^5.3.3",
     "zod": "^4.2.1"
   },
   "devDependencies": {
