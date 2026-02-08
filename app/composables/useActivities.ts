@@ -118,13 +118,12 @@ export function useActivities() {
     }
   }
 
-  async function reorderActivities(protocolId: string, order: string[]) {
+  async function reorderActivities(protocolId: string, order: string[], groupId?: string) {
     error.value = null;
     try {
-      // Update order for each activity
       await Promise.all(
         order.map(async (id, idx) =>
-          db.activities.update(id, { order: idx }),
+          db.activities.update(id, { order: idx, groupId: groupId ?? undefined }),
         ),
       );
       await loadActivities(protocolId);
@@ -134,6 +133,30 @@ export function useActivities() {
       console.error(error.value, e);
       throw e;
     }
+  }
+
+  async function moveToGroup(activityId: string, groupId: string | undefined) {
+    error.value = null;
+    try {
+      const activity = await db.activities.get(activityId);
+      if (!activity)
+        throw new Error(`Activity ${activityId} not found`);
+      await db.activities.update(activityId, { groupId });
+      await loadActivities(activity.protocolId);
+    }
+    catch (e) {
+      error.value = `Failed to move activity: ${String(e)}`;
+      console.error(error.value, e);
+      throw e;
+    }
+  }
+
+  const ungroupedActivities = computed(() => {
+    return activities.value.filter(a => !a.groupId);
+  });
+
+  function activitiesForGroup(groupId: string) {
+    return activities.value.filter(a => a.groupId === groupId);
   }
 
   return {
@@ -148,5 +171,10 @@ export function useActivities() {
     updateActivity,
     deleteActivity,
     reorderActivities,
+    moveToGroup,
+
+    // Grouped
+    ungroupedActivities,
+    activitiesForGroup,
   };
 }

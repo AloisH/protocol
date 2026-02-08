@@ -9,7 +9,7 @@ const props = defineProps<Props>();
 
 const _emit = defineEmits<{
   edit: [activity: Activity];
-  delete: [id: string];
+  delete: [activity: Activity];
 }>();
 
 const activityTypeIcons: Record<string, string> = {
@@ -48,6 +48,8 @@ const displayDetails = computed(() => {
       details.push(`${a.sets}x${a.reps || '?'}`);
     if (a.weight)
       details.push(`${a.weight}${a.equipmentType ? ` (${a.equipmentType})` : ''}`);
+    if (a.restTime)
+      details.push(`${a.restTime}s rest`);
   }
   else if (a.activityType === 'supplement') {
     if (a.dosage)
@@ -58,6 +60,8 @@ const displayDetails = computed(() => {
   else if (a.activityType === 'warmup') {
     if (a.duration)
       details.push(`${a.duration} min`);
+    if (a.restTime)
+      details.push(`${a.restTime}s rest`);
   }
 
   return details.join(' • ');
@@ -102,7 +106,7 @@ const displayDetails = computed(() => {
         color="error"
         variant="ghost"
         size="sm"
-        @click="_emit('delete', activity.id)"
+        @click="_emit('delete', activity)"
       />
     </div>
   </div>

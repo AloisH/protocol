@@ -13,9 +13,17 @@ export interface Protocol {
   updatedAt: Date;
 }
 
+export interface ActivityGroup {
+  id: string;
+  protocolId: string;
+  name: string;
+  order: number;
+}
+
 export interface Activity {
   id: string;
   protocolId: string;
+  groupId?: string;
   name: string;
   activityType: 'warmup' | 'exercise' | 'supplement' | 'habit';
   order: number;
@@ -35,6 +43,9 @@ export interface Activity {
 
   // Warmup-specific
   duration?: number;
+
+  // Rest time (exercise/warmup)
+  restTime?: number; // seconds
 
   notes?: string;
 }
@@ -82,6 +93,8 @@ export interface Settings {
   userId: string;
   theme: 'light' | 'dark' | 'auto';
   notificationsEnabled: boolean;
+  reminderTime?: string; // HH:MM format
+  reminderDays?: string[]; // days to remind
   restDaySchedule?: string[];
 }
 
@@ -100,6 +113,7 @@ export class ProtocolDB extends Dexie {
   routines!: Table<Routine>;
   exercises!: Table<Exercise>;
   activities!: Table<Activity>;
+  activityGroups!: Table<ActivityGroup>;
   trackingLogs!: Table<TrackingLog>;
   settings!: Table<Settings>;
   dailyCompletions!: Table<DailyCompletion>;
@@ -167,6 +181,16 @@ export class ProtocolDB extends Dexie {
           activityId: log.exerciseId ?? '',
         });
       }
+    });
+    this.version(4).stores({
+      protocols: '++id, status, createdAt',
+      routines: '++id, protocolId, order',
+      exercises: '++id, routineId',
+      activities: '++id, protocolId, groupId, order',
+      activityGroups: '++id, protocolId, order',
+      trackingLogs: '++id, activityId, [activityId+date]',
+      settings: '++userId',
+      dailyCompletions: '++id, protocolId, date, [protocolId+date]',
     });
   }
 }

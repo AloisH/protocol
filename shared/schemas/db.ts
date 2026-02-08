@@ -12,9 +12,17 @@ export const ProtocolSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 
+export const ActivityGroupSchema = z.object({
+  id: z.string().min(1, 'ID required'),
+  protocolId: z.string().min(1, 'Protocol ID required'),
+  name: z.string().min(1, 'Name required').max(100),
+  order: z.number().int().min(0),
+});
+
 const baseActivitySchema = z.object({
   id: z.string().min(1, 'ID required'),
   protocolId: z.string().min(1, 'Protocol ID required'),
+  groupId: z.string().optional(),
   name: z.string().min(1, 'Name required').max(100),
   order: z.number().int().min(0),
   frequency: z.union([
@@ -91,7 +99,9 @@ export const TrackingLogSchema = z.object({
 export const SettingsSchema = z.object({
   userId: z.string().min(1),
   theme: z.enum(['light', 'dark', 'auto']).default('auto'),
-  notificationsEnabled: z.boolean().default(true),
+  notificationsEnabled: z.boolean().default(false),
+  reminderTime: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format').optional(),
+  reminderDays: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
   restDaySchedule: z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])).optional(),
 });
 
@@ -105,6 +115,7 @@ export const DailyCompletionSchema = z.object({
 });
 
 export type ProtocolInput = z.infer<typeof ProtocolSchema>;
+export type ActivityGroupInput = z.infer<typeof ActivityGroupSchema>;
 export type ActivityInput = z.infer<typeof ActivitySchema>;
 export type TrackingLogInput = z.infer<typeof TrackingLogSchema>;
 export type SettingsInput = z.infer<typeof SettingsSchema>;
