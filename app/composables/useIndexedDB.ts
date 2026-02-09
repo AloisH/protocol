@@ -153,7 +153,7 @@ export function useIndexedDB() {
     mode: 'merge' | 'replace' = 'merge',
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      await db.transaction('rw', db.protocols, db.activities, db.trackingLogs, db.settings, db.dailyCompletions, async () => {
+      await db.transaction('rw', [db.protocols, db.activities, db.trackingLogs, db.settings, db.dailyCompletions], async () => {
         if (mode === 'replace') {
           await Promise.all([
             db.protocols.clear(),

@@ -12,12 +12,6 @@ const navLinks = computed<NavigationMenuItem[]>(() => [
     active: route.path.startsWith('/protocols'),
   },
   {
-    label: 'Tracking',
-    to: '/tracking',
-    icon: 'i-lucide-calendar',
-    active: route.path === '/tracking',
-  },
-  {
     label: 'Analytics',
     to: '/analytics',
     icon: 'i-lucide-chart-line',
@@ -67,7 +61,7 @@ watch(() => route.path, () => {
 
       <!-- Desktop navigation -->
       <div class="hidden md:flex items-center gap-1">
-        <template v-for="link in navLinks" :key="link.to">
+        <template v-for="link in navLinks" :key="String(link.to)">
           <NuxtLink
             :to="String(link.to)"
             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all duration-200 no-underline"
@@ -135,7 +129,7 @@ watch(() => route.path, () => {
         class="md:hidden border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm"
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-2">
-          <template v-for="link in navLinks" :key="link.to">
+          <template v-for="link in navLinks" :key="String(link.to)">
             <NuxtLink
               :to="String(link.to)"
               class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all duration-200 no-underline"

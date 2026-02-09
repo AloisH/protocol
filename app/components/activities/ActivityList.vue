@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Activity, ActivityGroup } from '#shared/db/schema';
-import Sortable from 'sortablejs';
+import { VueDraggable } from 'vue-draggable-plus';
 
 interface Props {
   protocolId: string;
@@ -13,7 +13,7 @@ const {
   createActivity,
   updateActivity,
   deleteActivity,
-  reorderActivities,
+  persistOrder,
   loadActivities,
   ungroupedActivities,
   activitiesForGroup,
@@ -40,11 +40,19 @@ const isGroupDeleteOpen = ref(false);
 const editingGroup = ref<ActivityGroup | null>(null);
 const deletingGroup = ref<ActivityGroup | null>(null);
 
-const ungroupedListRef = useTemplateRef('ungrouped-list');
-let sortableInstance: Sortable | null = null;
+// Local mutable list for ungrouped draggable
+const localUngrouped = ref<Activity[]>([]);
 
 const protocolUngrouped = computed(() =>
   ungroupedActivities.value.filter(a => a.protocolId === props.protocolId),
+);
+
+watch(
+  protocolUngrouped,
+  (val) => {
+    localUngrouped.value = [...val];
+  },
+  { immediate: true },
 );
 
 onMounted(async () => {
@@ -52,38 +60,15 @@ onMounted(async () => {
     loadActivities(props.protocolId),
     loadGroups(props.protocolId),
   ]);
-  initUngroupedSortable();
 });
 
-function initUngroupedSortable() {
-  if (ungroupedListRef.value) {
-    sortableInstance = Sortable.create(ungroupedListRef.value, {
-      group: 'activities',
-      handle: '.drag-handle',
-      animation: 200,
-      ghostClass: 'opacity-50',
-      onEnd: () => {
-        if (ungroupedListRef.value) {
-          const ids = Array.from(ungroupedListRef.value.querySelectorAll('[data-activity-id]')).map(
-            el => (el as HTMLElement).dataset.activityId,
-          ) as string[];
-          reorderActivities(props.protocolId, ids, undefined);
-        }
-      },
-    });
-  }
+function onUngroupedDragEnd() {
+  persistOrder(props.protocolId, localUngrouped.value, undefined);
 }
 
-watch(() => protocolUngrouped.value.length, () => {
-  nextTick(() => {
-    sortableInstance?.destroy();
-    initUngroupedSortable();
-  });
-});
-
-onBeforeUnmount(() => {
-  sortableInstance?.destroy();
-});
+function onGroupChange(items: Activity[], groupId: string) {
+  persistOrder(props.protocolId, items, groupId);
+}
 
 // Activity CRUD handlers
 function openCreateForm(groupId?: string) {
@@ -111,7 +96,7 @@ async function onFormSubmit(data: any) {
     else {
       const allActivities = activities.value.filter(a => a.protocolId === props.protocolId);
       const maxOrder = Math.max(...(allActivities.map(a => a.order) || [0]), -1) + 1;
-      await createActivity(props.protocolId, data.name, data.activityType, data.frequency, maxOrder);
+      await createActivity(props.protocolId, data.name, data.activityType, maxOrder);
 
       const newActivity = activities.value[activities.value.length - 1];
       if (newActivity) {
@@ -179,17 +164,13 @@ async function onGroupDeleteConfirm() {
     }
   }
 }
-
-function onGroupReorder(orderedIds: string[], groupId: string) {
-  reorderActivities(props.protocolId, orderedIds, groupId);
-}
 </script>
 
 <template>
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h3 class="font-semibold text-gray-900 dark:text-white">
+      <h3 class="font-semibold text-neutral-900 dark:text-white">
         Activities
       </h3>
       <div class="flex gap-2">
@@ -220,29 +201,36 @@ function onGroupReorder(orderedIds: string[], groupId: string) {
     <!-- Empty State -->
     <div
       v-if="!loading && activities.length === 0 && groups.length === 0"
-      class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-900/50"
+      class="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-8 text-center dark:border-neutral-600 dark:bg-neutral-900/50"
     >
-      <UIcon name="i-lucide-inbox" class="mx-auto h-8 w-8 text-gray-400" />
-      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+      <UIcon name="i-lucide-inbox" class="mx-auto h-8 w-8 text-neutral-400" />
+      <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
         No activities yet. Add one to get started!
       </p>
     </div>
 
     <template v-if="!loading">
-      <!-- Ungrouped Activities -->
-      <div
-        v-if="protocolUngrouped.length > 0 || groups.length > 0"
-        ref="ungrouped-list"
+      <!-- Ungrouped Activities (draggable) -->
+      <VueDraggable
+        v-if="localUngrouped.length > 0 || groups.length > 0"
+        v-model="localUngrouped"
+        group="activities"
+        handle=".drag-handle"
+        :animation="200"
+        ghost-class="opacity-50"
+        item-key="id"
         class="min-h-[2rem] space-y-2"
+        @update="onUngroupedDragEnd"
+        @add="onUngroupedDragEnd"
+        @remove="onUngroupedDragEnd"
       >
         <div
-          v-for="activity in protocolUngrouped"
+          v-for="activity in localUngrouped"
           :key="activity.id"
-          :data-activity-id="activity.id"
-          class="group flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+          class="group flex items-start gap-3 rounded-lg border border-neutral-200 bg-white p-3 transition-shadow hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900"
         >
-          <div class="drag-handle flex-shrink-0 cursor-grab rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing dark:hover:bg-gray-800">
-            <UIcon name="i-lucide-grip-vertical" class="h-5 w-5 text-gray-400" />
+          <div class="drag-handle flex-shrink-0 cursor-grab rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing">
+            <UIcon name="i-lucide-grip-vertical" class="h-5 w-5 text-neutral-400" />
           </div>
           <div class="flex-1">
             <ActivityCard
@@ -252,7 +240,7 @@ function onGroupReorder(orderedIds: string[], groupId: string) {
             />
           </div>
         </div>
-      </div>
+      </VueDraggable>
 
       <!-- Groups -->
       <ActivityGroupSection
@@ -265,66 +253,66 @@ function onGroupReorder(orderedIds: string[], groupId: string) {
         @delete-group="openGroupDeleteDialog"
         @edit-activity="openEditForm"
         @delete-activity="openDeleteDialog"
-        @reorder="onGroupReorder"
+        @change="onGroupChange"
         @add-activity="openCreateForm"
       />
     </template>
 
     <!-- Activity Form & Delete -->
     <ActivityForm
-      v-model="isFormOpen"
+      v-model:open="isFormOpen"
       :activity="editingActivity ?? undefined"
       :protocol-id="protocolId"
       @submit="onFormSubmit"
     />
 
     <DeleteActivityDialog
-      v-model="isDeleteOpen"
+      v-model:open="isDeleteOpen"
       :activity="deletingActivity"
       @confirm="onDeleteConfirm"
     />
 
     <!-- Group Form & Delete -->
     <ActivityGroupForm
-      v-model="isGroupFormOpen"
+      v-model:open="isGroupFormOpen"
       :group="editingGroup"
       @submit="onGroupFormSubmit"
     />
 
-    <UModal v-model="isGroupDeleteOpen">
-      <template #header>
-        <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-alert-triangle" class="h-5 w-5 text-red-500" />
-          <span>Delete Group</span>
-        </div>
-      </template>
+    <UModal
+      v-model:open="isGroupDeleteOpen"
+      title="Delete Group"
+      description="This action cannot be undone."
+      :ui="{ footer: 'justify-end' }"
+    >
       <template #body>
-        <div class="space-y-4 p-4">
-          <UAlert
-            icon="i-lucide-info"
-            color="warning"
-            title="Warning"
-            description="This will delete the group and all activities inside it, along with their tracking logs."
-          />
-          <div v-if="deletingGroup" class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
-            <p class="text-sm font-semibold text-gray-900 dark:text-white">
-              {{ deletingGroup.name }}
-            </p>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              {{ activitiesForGroup(deletingGroup.id).length }} activities
-            </p>
+        <div class="space-y-4">
+          <div v-if="deletingGroup" class="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900">
+            <div class="flex-shrink-0 rounded-full bg-neutral-100 p-2 dark:bg-neutral-800">
+              <UIcon name="i-lucide-folder" class="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+            </div>
+            <div>
+              <p class="text-sm font-medium text-neutral-900 dark:text-white">
+                {{ deletingGroup.name }}
+              </p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                {{ activitiesForGroup(deletingGroup.id).length }} activities will be deleted
+              </p>
+            </div>
           </div>
+
+          <p class="text-sm text-neutral-600 dark:text-neutral-400">
+            This will permanently delete the group and all activities inside it, along with their tracking logs.
+          </p>
         </div>
       </template>
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" @click="isGroupDeleteOpen = false">
-            Cancel
-          </UButton>
-          <UButton color="error" @click="onGroupDeleteConfirm">
-            Delete Group
-          </UButton>
-        </div>
+      <template #footer="{ close }">
+        <UButton color="neutral" variant="outline" @click="close">
+          Cancel
+        </UButton>
+        <UButton color="error" icon="i-lucide-trash-2" @click="onGroupDeleteConfirm">
+          Delete Group
+        </UButton>
       </template>
     </UModal>
   </div>

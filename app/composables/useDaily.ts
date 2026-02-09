@@ -12,7 +12,7 @@ export function useDaily() {
   // Get today's date in YYYY-MM-DD format
   const today = computed(() => {
     const d = new Date();
-    return d.toISOString().split('T')[0];
+    return d.toISOString().split('T')[0]!;
   });
 
   // Get day of week (0 = Sunday, 6 = Saturday)
@@ -155,7 +155,7 @@ export function useDaily() {
     // For daily protocols, check consecutive days
     if (protocol.duration === 'daily') {
       for (const completion of sorted) {
-        const expectedDate = checkDate.toISOString().split('T')[0];
+        const expectedDate = checkDate.toISOString().split('T')[0]!;
         if (completion.date === expectedDate) {
           streak++;
           checkDate.setDate(checkDate.getDate() - 1);
@@ -181,7 +181,7 @@ export function useDaily() {
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    const startDateStr = startDate.toISOString().split('T')[0]!;
 
     const recentCompletions = await db.dailyCompletions
       .where('protocolId')

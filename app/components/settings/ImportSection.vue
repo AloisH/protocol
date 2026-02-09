@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ExportData } from '#shared/schemas/export';
+
 const { validateImport, importData } = useIndexedDB();
 
 const loading = ref(false);
@@ -6,7 +8,7 @@ const error = ref<string | null>(null);
 const success = ref(false);
 const mode = ref<'merge' | 'replace'>('merge');
 const confirmOpen = ref(false);
-const pendingData = ref<unknown>(null);
+const pendingData = ref<ExportData | null>(null);
 
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -56,7 +58,7 @@ async function doImport() {
 
   loading.value = true;
   try {
-    const result = await importData(pendingData.value, mode.value);
+    const result = await importData(pendingData.value!, mode.value);
     if (!result.success) {
       error.value = result.error ?? 'Import failed';
       return;

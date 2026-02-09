@@ -36,12 +36,6 @@ const typeLabel = computed(() => {
 const displayDetails = computed(() => {
   const a = activity.value;
   const details = [];
-  if (a.frequency === 'daily') {
-    details.push('Daily');
-  }
-  else if (a.frequency === 'weekly') {
-    details.push('Weekly');
-  }
 
   if (a.activityType === 'exercise') {
     if (a.sets)
@@ -59,7 +53,7 @@ const displayDetails = computed(() => {
   }
   else if (a.activityType === 'warmup') {
     if (a.duration)
-      details.push(`${a.duration} min`);
+      details.push(`${a.duration}s`);
     if (a.restTime)
       details.push(`${a.restTime}s rest`);
   }

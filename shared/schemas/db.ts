@@ -25,10 +25,6 @@ const baseActivitySchema = z.object({
   groupId: z.string().optional(),
   name: z.string().min(1, 'Name required').max(100),
   order: z.number().int().min(0),
-  frequency: z.union([
-    z.enum(['daily', 'weekly']),
-    z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])),
-  ]),
   timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
   notes: z.string().max(500).optional(),
 });

@@ -27,7 +27,6 @@ export interface Activity {
   name: string;
   activityType: 'warmup' | 'exercise' | 'supplement' | 'habit';
   order: number;
-  frequency: 'daily' | 'weekly' | string[];
   timeOfDay?: 'morning' | 'afternoon' | 'evening';
 
   // Exercise-specific
@@ -94,8 +93,8 @@ export interface Settings {
   theme: 'light' | 'dark' | 'auto';
   notificationsEnabled: boolean;
   reminderTime?: string; // HH:MM format
-  reminderDays?: string[]; // days to remind
-  restDaySchedule?: string[];
+  reminderDays?: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[];
+  restDaySchedule?: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[];
 }
 
 // Simple daily completion tracking at protocol level
@@ -144,10 +143,11 @@ export class ProtocolDB extends Dexie {
       settings: '++userId',
       dailyCompletions: '++id, protocolId, date, [protocolId+date]',
     }).upgrade(async (tx) => {
-      // Migrate routines to activities
+      // Migrate routines to activities (raw table to handle legacy fields)
       const routines = await tx.table<Routine>('routines').toArray();
+      const activityTable = tx.table('activities');
       for (const routine of routines) {
-        await tx.table<Activity>('activities').add({
+        await activityTable.add({
           ...routine,
           activityType: 'habit',
         });
@@ -158,13 +158,12 @@ export class ProtocolDB extends Dexie {
       for (const exercise of exercises) {
         const routine = await tx.table<Routine>('routines').get(exercise.routineId);
         if (routine) {
-          await tx.table<Activity>('activities').add({
+          await activityTable.add({
             id: exercise.id,
             protocolId: routine.protocolId,
             name: exercise.name,
             activityType: 'exercise',
             order: 0,
-            frequency: 'daily',
             sets: exercise.sets,
             reps: exercise.reps,
             weight: exercise.weight,

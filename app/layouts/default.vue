@@ -35,7 +35,6 @@
             <ul class="space-y-2">
               <li><a href="/" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Home</a></li>
               <li><a href="/protocols" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Protocols</a></li>
-              <li><a href="/tracking" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Tracking</a></li>
               <li><a href="/analytics" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Analytics</a></li>
             </ul>
           </div>

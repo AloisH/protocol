@@ -37,7 +37,6 @@ export function useActivities() {
     protocolId: string,
     name: string,
     activityType: 'warmup' | 'exercise' | 'supplement' | 'habit' = 'habit',
-    frequency: 'daily' | 'weekly' | string[] = 'daily',
     order: number = 0,
   ) {
     error.value = null;
@@ -47,7 +46,6 @@ export function useActivities() {
         protocolId,
         name,
         activityType,
-        frequency,
         order,
       };
 
@@ -135,6 +133,40 @@ export function useActivities() {
     }
   }
 
+  let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Persist order + groupId to DB, then debounced reload to sync state */
+  async function persistOrder(protocolId: string, items: { id: string }[], groupId: string | undefined) {
+    try {
+      await db.transaction('rw', db.activities, async () => {
+        for (let i = 0; i < items.length; i++) {
+          const itemId = items[i]!.id;
+          if (groupId !== undefined) {
+            await db.activities.update(itemId, { order: i, groupId });
+          }
+          else {
+            await db.activities.update(itemId, { order: i });
+            await db.activities.where('id').equals(itemId).modify({ groupId: undefined });
+          }
+        }
+      });
+      // Debounced reload — both source & target call persistOrder,
+      // single reload fires after both complete
+      if (reloadTimer) {
+        clearTimeout(reloadTimer);
+      }
+      reloadTimer = setTimeout(() => {
+        void loadActivities(protocolId).then(() => {
+          reloadTimer = null;
+        });
+      }, 300);
+    }
+    catch (e) {
+      console.error('Failed to persist order:', e);
+      await loadActivities(protocolId);
+    }
+  }
+
   async function moveToGroup(activityId: string, groupId: string | undefined) {
     error.value = null;
     try {
@@ -155,8 +187,28 @@ export function useActivities() {
     return activities.value.filter(a => !a.groupId);
   });
 
+  // Memoized map — returns stable array references while activities ref unchanged,
+  // preventing watchers from resetting local drag state on parent re-render
+  const groupedActivitiesMap = computed(() => {
+    const map = new Map<string, Activity[]>();
+    for (const a of activities.value) {
+      if (a.groupId) {
+        const list = map.get(a.groupId);
+        if (list) {
+          list.push(a);
+        }
+        else {
+          map.set(a.groupId, [a]);
+        }
+      }
+    }
+    return map;
+  });
+
+  const EMPTY_ACTIVITIES: Activity[] = [];
+
   function activitiesForGroup(groupId: string) {
-    return activities.value.filter(a => a.groupId === groupId);
+    return groupedActivitiesMap.value.get(groupId) ?? EMPTY_ACTIVITIES;
   }
 
   return {
@@ -171,6 +223,7 @@ export function useActivities() {
     updateActivity,
     deleteActivity,
     reorderActivities,
+    persistOrder,
     moveToGroup,
 
     // Grouped

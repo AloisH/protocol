@@ -3,22 +3,29 @@ import type { Activity } from '#shared/db/schema';
 
 interface Props {
   activity: Activity | null;
-  modelValue?: boolean;
+  open?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
+  open: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean];
+  'update:open': [boolean];
   'confirm': [];
 }>();
 
 const isOpen = computed({
-  get: () => props.modelValue ?? false,
-  set: (value: boolean) => emit('update:modelValue', value),
+  get: () => props.open,
+  set: (value: boolean) => emit('update:open', value),
 });
+
+const activityTypeIcons: Record<string, string> = {
+  exercise: 'i-lucide-dumbbell',
+  warmup: 'i-lucide-zap',
+  supplement: 'i-lucide-pill',
+  habit: 'i-lucide-check-circle',
+};
 
 const loading = ref(false);
 
@@ -35,47 +42,57 @@ async function onConfirm() {
 </script>
 
 <template>
-  <UModal v-model="isOpen">
-    <template #header>
-      <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-alert-triangle" class="h-5 w-5 text-red-500" />
-        <span>Delete Activity</span>
-      </div>
-    </template>
-
+  <UModal
+    v-model:open="isOpen"
+    title="Delete Activity"
+    description="This action cannot be undone."
+    :ui="{ footer: 'justify-end' }"
+  >
     <template #body>
-      <div class="space-y-4 p-4">
-        <UAlert
-          icon="i-lucide-info"
-          color="yellow"
-          title="Warning"
-          description="This will delete the activity and all associated tracking logs. This action cannot be undone."
-        />
-
-        <div v-if="activity" class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
-          <p class="text-sm font-semibold text-gray-900 dark:text-white">
-            {{ activity.name }}
-          </p>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ activity.activityType }} • {{ activity.frequency }}
-          </p>
+      <div class="space-y-4">
+        <div
+          v-if="activity"
+          class="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900"
+        >
+          <div class="flex-shrink-0 rounded-full bg-neutral-100 p-2 dark:bg-neutral-800">
+            <UIcon
+              :name="activityTypeIcons[activity.activityType] || 'i-lucide-circle'"
+              class="h-4 w-4 text-neutral-600 dark:text-neutral-400"
+            />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-neutral-900 dark:text-white">
+              {{ activity.name }}
+            </p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">
+              {{ activity.activityType }}
+            </p>
+          </div>
         </div>
+
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">
+          This will permanently delete the activity and all associated tracking logs.
+        </p>
       </div>
     </template>
 
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <UButton color="neutral" @click="isOpen = false">
-          Cancel
-        </UButton>
-        <UButton
-          color="error"
-          :loading="loading"
-          @click="onConfirm"
-        >
-          Delete Activity
-        </UButton>
-      </div>
+    <template #footer="{ close }">
+      <UButton
+        color="neutral"
+        variant="outline"
+        :disabled="loading"
+        @click="close"
+      >
+        Cancel
+      </UButton>
+      <UButton
+        color="error"
+        :loading="loading"
+        icon="i-lucide-trash-2"
+        @click="onConfirm"
+      >
+        Delete
+      </UButton>
     </template>
   </UModal>
 </template>

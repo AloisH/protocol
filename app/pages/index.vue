@@ -173,7 +173,7 @@ const formattedDate = computed(() => {
             </div>
 
             <!-- Streak Badge -->
-            <div v-if="streaks[protocol.id] > 0" class="flex-shrink-0">
+            <div v-if="(streaks[protocol.id] ?? 0) > 0" class="flex-shrink-0">
               <UBadge color="warning" variant="soft" class="gap-1">
                 <UIcon name="i-lucide-flame" class="w-3 h-3" />
                 {{ streaks[protocol.id] }}
@@ -181,7 +181,7 @@ const formattedDate = computed(() => {
             </div>
 
             <!-- Duration Badge -->
-            <UBadge color="gray" variant="soft" class="flex-shrink-0 capitalize">
+            <UBadge color="neutral" variant="soft" class="flex-shrink-0 capitalize">
               {{ protocol.duration }}
             </UBadge>
           </div>

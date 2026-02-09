@@ -50,7 +50,7 @@ const formattedDate = computed(() => {
 });
 
 watch(
-  () => [props.protocol, props.modelValue],
+  () => [props.protocol, props.modelValue] as const,
   async ([protocol, open]) => {
     if (protocol && open) {
       await loadActivities(protocol.id);
@@ -82,7 +82,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <UModal v-model="isOpen" :ui="{ width: 'max-w-2xl' }">
+  <UModal v-model="isOpen" class="max-w-2xl">
     <template #header>
       <div class="flex items-center justify-between w-full">
         <div>
@@ -134,7 +134,7 @@ async function handleSave() {
           <UTextarea
             v-model="sessionNotes"
             placeholder="How did the session go?"
-            rows="3"
+            :rows="3"
           />
         </div>
 

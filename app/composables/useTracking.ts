@@ -42,7 +42,7 @@ export function useTracking() {
     try {
       const log: TrackingLog = {
         id: nanoid(),
-        exerciseId,
+        activityId: exerciseId,
         date,
         completed: data.completed ?? false,
         setsDone: data.setsDone,

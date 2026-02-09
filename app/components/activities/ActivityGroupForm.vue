@@ -3,24 +3,26 @@ import type { ActivityGroup } from '#shared/db/schema';
 
 interface Props {
   group?: ActivityGroup | null;
-  modelValue?: boolean;
+  open?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
+  open: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean];
+  'update:open': [boolean];
   'submit': [data: { name: string }];
 }>();
 
 const isOpen = computed({
-  get: () => props.modelValue ?? false,
-  set: (value: boolean) => emit('update:modelValue', value),
+  get: () => props.open,
+  set: (value: boolean) => emit('update:open', value),
 });
 
 const name = ref('');
+
+const isEditMode = computed(() => !!props.group);
 
 watch(
   () => props.group,
@@ -39,27 +41,39 @@ function onSubmit() {
 </script>
 
 <template>
-  <UModal v-model="isOpen" :title="group ? 'Edit Group' : 'New Group'">
+  <UModal
+    v-model:open="isOpen"
+    :title="isEditMode ? 'Edit Group' : 'New Group'"
+    :description="isEditMode ? 'Rename this activity group' : 'Organize activities into a collapsible section'"
+    :ui="{ footer: 'justify-end' }"
+  >
     <template #body>
-      <div class="p-4">
-        <UFormField label="Group Name" required>
-          <UInput
-            v-model="name"
-            placeholder="e.g., Upper Body, Morning Routine"
-            @keydown.enter="onSubmit"
-          />
-        </UFormField>
-      </div>
+      <UFormField label="Group Name" required>
+        <UInput
+          v-model="name"
+          placeholder="e.g., Upper Body, Morning Routine"
+          icon="i-lucide-folder"
+          @keydown.enter="onSubmit"
+        />
+      </UFormField>
     </template>
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <UButton color="neutral" @click="isOpen = false">
-          Cancel
-        </UButton>
-        <UButton :disabled="!name.trim()" @click="onSubmit">
-          {{ group ? 'Update' : 'Create' }} Group
-        </UButton>
-      </div>
+
+    <template #footer="{ close }">
+      <UButton
+        color="neutral"
+        variant="outline"
+        @click="close"
+      >
+        Cancel
+      </UButton>
+      <UButton
+        color="primary"
+        :disabled="!name.trim()"
+        icon="i-lucide-check"
+        @click="onSubmit"
+      >
+        {{ isEditMode ? 'Update' : 'Create' }}
+      </UButton>
     </template>
   </UModal>
 </template>

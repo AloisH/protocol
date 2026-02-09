@@ -10,9 +10,6 @@ const installPrompt = ref<any>(null);
 const showInstallPrompt = ref(false);
 const toast = useToast();
 
-// Service Worker updates
-const swRegistration = ref<ServiceWorkerRegistration | null>(null);
-
 onMounted(() => {
   // Handle install prompt
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -21,37 +18,7 @@ onMounted(() => {
     showInstallPrompt.value = true;
   });
 
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
-      swRegistration.value = reg;
-
-      // Check for updates
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker?.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            toast.add({
-              title: 'Update available',
-              description: 'A new version is ready. Reload to update.',
-              color: 'primary',
-              actions: [
-                {
-                  label: 'Reload',
-                  onClick: () => window.location.reload(),
-                },
-              ],
-            });
-          }
-        });
-      });
-    });
-  }
-
-  // Check for updates periodically
-  setInterval(() => {
-    swRegistration.value?.update();
-  }, 60000); // Check every minute
+  // Service worker registration handled by @vite-pwa/nuxt when enabled
 });
 
 async function installApp() {

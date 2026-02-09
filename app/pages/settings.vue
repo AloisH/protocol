@@ -19,6 +19,13 @@ useSeoMeta({
 
       <section>
         <h2 class="text-xl font-semibold mb-4">
+          Notifications
+        </h2>
+        <NotificationsSection />
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold mb-4">
           Data Backup
         </h2>
         <div class="space-y-4">

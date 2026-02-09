@@ -1,6 +1,7 @@
 import type { DailyCompletion, TrackingLog } from '#shared/db/schema';
 import { db } from '#shared/db/schema';
 import { nanoid } from 'nanoid';
+import { computed, readonly, ref } from 'vue';
 
 export interface ActivityLog {
   activityId: string;
@@ -24,7 +25,7 @@ export function useSession() {
   // Initialize session for a protocol
   async function initSession(pId: string, date?: string) {
     protocolId.value = pId;
-    sessionDate.value = date || new Date().toISOString().split('T')[0];
+    sessionDate.value = date || new Date().toISOString().split('T')[0]!;
     activityLogs.value = new Map();
     sessionNotes.value = '';
     sessionRating.value = undefined;
@@ -61,7 +62,7 @@ export function useSession() {
           .filter(log => log.date >= dayStart && log.date <= dayEnd)
           .toArray();
 
-        if (existingLogs.length > 0) {
+        if (existingLogs.length > 0 && existingLogs[0]) {
           const log = existingLogs[0];
           activityLogs.value.set(activity.id, {
             activityId: activity.id,
@@ -162,7 +163,7 @@ export function useSession() {
           notes: log.notes,
         };
 
-        if (existingLogs.length > 0) {
+        if (existingLogs.length > 0 && existingLogs[0]) {
           await db.trackingLogs.update(existingLogs[0].id, trackingLog);
         }
         else {
