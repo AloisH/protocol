@@ -20,6 +20,13 @@ export interface ActivityGroup {
   order: number;
 }
 
+export interface SupplementDose {
+  dosage?: number;
+  dosageUnit?: string;
+  timeOfDay?: 'morning' | 'afternoon' | 'evening';
+  timing?: string;
+}
+
 export interface Activity {
   id: string;
   protocolId: string;
@@ -36,9 +43,7 @@ export interface Activity {
   equipmentType?: string;
 
   // Supplement-specific
-  dosage?: number;
-  dosageUnit?: string;
-  timing?: string;
+  doses?: SupplementDose[];
 
   // Warmup-specific
   duration?: number;
@@ -83,6 +88,7 @@ export interface TrackingLog {
   durationTaken?: number;
   energyLevel?: number;
   difficultyFelt?: number;
+  dosesCompleted?: boolean[];
   notes?: string;
   /** @deprecated Use activityId instead */
   exerciseId?: string;
@@ -190,6 +196,36 @@ export class ProtocolDB extends Dexie {
       trackingLogs: '++id, activityId, [activityId+date]',
       settings: '++userId',
       dailyCompletions: '++id, protocolId, date, [protocolId+date]',
+    });
+    this.version(5).stores({
+      protocols: '++id, status, createdAt',
+      routines: '++id, protocolId, order',
+      exercises: '++id, routineId',
+      activities: '++id, protocolId, groupId, order',
+      activityGroups: '++id, protocolId, order',
+      trackingLogs: '++id, activityId, [activityId+date]',
+      settings: '++userId',
+      dailyCompletions: '++id, protocolId, date, [protocolId+date]',
+    }).upgrade(async (tx) => {
+      // Migrate flat dosage/dosageUnit/timing → doses[] for supplements
+      const activities = await tx.table<Activity & { dosage?: number; dosageUnit?: string; timing?: string }>('activities').toArray();
+      for (const activity of activities) {
+        if (activity.activityType === 'supplement' && (activity.dosage || activity.dosageUnit || activity.timing)) {
+          const dose: SupplementDose = {};
+          if (activity.dosage)
+            dose.dosage = activity.dosage;
+          if (activity.dosageUnit)
+            dose.dosageUnit = activity.dosageUnit;
+          if (activity.timing)
+            dose.timing = activity.timing;
+          await tx.table('activities').update(activity.id, {
+            doses: [dose],
+            dosage: undefined,
+            dosageUnit: undefined,
+            timing: undefined,
+          });
+        }
+      }
     });
   }
 }

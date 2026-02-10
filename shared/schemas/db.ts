@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const SupplementDoseSchema = z.object({
+  dosage: z.number().positive().optional(),
+  dosageUnit: z.string().max(20).optional(),
+  timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
+  timing: z.string().max(100).optional(),
+});
+
 export const ProtocolSchema = z.object({
   id: z.string().min(1, 'ID required'),
   name: z.string().min(1, 'Name required').max(100),
@@ -43,6 +50,8 @@ export const ActivitySchema = z.discriminatedUnion('activityType', [
   }),
   baseActivitySchema.extend({
     activityType: z.literal('supplement'),
+    doses: z.array(SupplementDoseSchema).optional(),
+    // Keep old fields for migration compat
     dosage: z.number().positive().optional(),
     dosageUnit: z.string().max(20).optional(),
     timing: z.string().max(100).optional(),
@@ -89,6 +98,7 @@ export const TrackingLogSchema = z.object({
   durationTaken: z.number().positive().optional(),
   energyLevel: z.number().int().min(1).max(10).optional(),
   difficultyFelt: z.number().int().min(1).max(10).optional(),
+  dosesCompleted: z.array(z.boolean()).optional(),
   notes: z.string().max(500).optional(),
 });
 

@@ -46,10 +46,19 @@ const displayDetails = computed(() => {
       details.push(`${a.restTime}s rest`);
   }
   else if (a.activityType === 'supplement') {
-    if (a.dosage)
-      details.push(`${a.dosage} ${a.dosageUnit || ''}`);
-    if (a.timing)
-      details.push(a.timing);
+    if (a.doses?.length) {
+      for (const dose of a.doses) {
+        const parts = [];
+        if (dose.dosage)
+          parts.push(`${dose.dosage}${dose.dosageUnit || ''}`);
+        if (dose.timeOfDay)
+          parts.push(dose.timeOfDay);
+        if (dose.timing)
+          parts.push(dose.timing);
+        if (parts.length)
+          details.push(parts.join(' — '));
+      }
+    }
   }
   else if (a.activityType === 'warmup') {
     if (a.duration)

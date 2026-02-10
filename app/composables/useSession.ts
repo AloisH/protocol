@@ -10,6 +10,7 @@ export interface ActivityLog {
   repsDone?: number;
   weightUsed?: number;
   durationTaken?: number;
+  dosesCompleted?: boolean[];
   notes?: string;
 }
 
@@ -64,6 +65,7 @@ export function useSession() {
 
         if (existingLogs.length > 0 && existingLogs[0]) {
           const log = existingLogs[0];
+          const doseCount = activity.doses?.length || 0;
           activityLogs.value.set(activity.id, {
             activityId: activity.id,
             completed: log.completed,
@@ -71,10 +73,14 @@ export function useSession() {
             repsDone: log.repsDone,
             weightUsed: log.weightUsed,
             durationTaken: log.durationTaken,
+            dosesCompleted: doseCount > 0
+              ? (log.dosesCompleted || Array.from({ length: doseCount }, () => false))
+              : undefined,
             notes: log.notes,
           });
         }
         else {
+          const doseCount = activity.doses?.length || 0;
           // Initialize empty log with defaults from activity
           activityLogs.value.set(activity.id, {
             activityId: activity.id,
@@ -83,6 +89,9 @@ export function useSession() {
             repsDone: activity.reps,
             weightUsed: activity.weight,
             durationTaken: activity.duration,
+            dosesCompleted: doseCount > 0
+              ? Array.from({ length: doseCount }, () => false)
+              : undefined,
           });
         }
       }
@@ -120,8 +129,26 @@ export function useSession() {
   function toggleActivity(activityId: string) {
     const existing = activityLogs.value.get(activityId);
     if (existing) {
-      existing.completed = !existing.completed;
-      activityLogs.value.set(activityId, existing);
+      const completed = !existing.completed;
+      activityLogs.value.set(activityId, {
+        ...existing,
+        completed,
+        dosesCompleted: existing.dosesCompleted?.map(() => completed),
+      });
+    }
+  }
+
+  // Toggle a specific dose for supplements
+  function toggleDose(activityId: string, doseIndex: number) {
+    const existing = activityLogs.value.get(activityId);
+    if (existing?.dosesCompleted && doseIndex < existing.dosesCompleted.length) {
+      const newDoses = [...existing.dosesCompleted];
+      newDoses[doseIndex] = !newDoses[doseIndex];
+      activityLogs.value.set(activityId, {
+        ...existing,
+        dosesCompleted: newDoses,
+        completed: newDoses.every(Boolean),
+      });
     }
   }
 
@@ -160,15 +187,11 @@ export function useSession() {
           repsDone: log.repsDone,
           weightUsed: log.weightUsed,
           durationTaken: log.durationTaken,
+          dosesCompleted: log.dosesCompleted,
           notes: log.notes,
         };
 
-        if (existingLogs.length > 0 && existingLogs[0]) {
-          await db.trackingLogs.update(existingLogs[0].id, trackingLog);
-        }
-        else {
-          await db.trackingLogs.add(trackingLog);
-        }
+        await db.trackingLogs.put(trackingLog);
       }
 
       // Save/update daily completion
@@ -221,7 +244,7 @@ export function useSession() {
     // State
     protocolId: readonly(protocolId),
     sessionDate: readonly(sessionDate),
-    activityLogs: readonly(activityLogs),
+    activityLogs,
     sessionNotes,
     sessionRating,
     loading: readonly(loading),
@@ -233,6 +256,7 @@ export function useSession() {
     initSession,
     updateActivityLog,
     toggleActivity,
+    toggleDose,
     saveSession,
   };
 }

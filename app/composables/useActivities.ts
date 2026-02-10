@@ -213,7 +213,7 @@ export function useActivities() {
 
   return {
     // State
-    activities: readonly(activities),
+    activities: shallowReadonly(activities),
     loading: readonly(loading),
     error: readonly(error),
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Activity, Protocol } from '#shared/db/schema';
+import type { Protocol } from '#shared/db/schema';
 
 interface Props {
   protocol: Protocol;
@@ -37,7 +37,7 @@ const durationLabel = computed(() => {
 });
 
 const protocolActivities = computed(() => {
-  return activities.value.filter((a: Activity) => a.protocolId === props.protocol.id);
+  return activities.value.filter(a => a.protocolId === props.protocol.id);
 });
 </script>
 

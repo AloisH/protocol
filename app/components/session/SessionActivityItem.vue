@@ -11,8 +11,15 @@ const _props = defineProps<Props>();
 
 const emit = defineEmits<{
   toggle: [];
+  toggleDose: [doseIndex: number];
   update: [updates: Partial<ActivityLog>];
 }>();
+
+const hasDoses = computed(() =>
+  _props.activity.activityType === 'supplement'
+  && _props.activity.doses
+  && _props.activity.doses.length > 0,
+);
 
 const activityTypeIcons: Record<string, string> = {
   exercise: 'i-lucide-dumbbell',
@@ -39,6 +46,7 @@ const activityTypeColors: Record<string, string> = {
     <!-- Header -->
     <div class="flex items-start gap-3">
       <button
+        v-if="!hasDoses"
         type="button"
         class="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
         :class="log.completed
@@ -62,6 +70,31 @@ const activityTypeColors: Record<string, string> = {
           >
             {{ activity.name }}
           </h4>
+        </div>
+
+        <!-- Per-dose checkboxes -->
+        <div v-if="hasDoses" class="mt-2 space-y-1.5">
+          <button
+            v-for="(dose, i) in activity.doses"
+            :key="i"
+            type="button"
+            class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+            @click="emit('toggleDose', i)"
+          >
+            <span
+              class="flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+              :class="log.dosesCompleted?.[i]
+                ? 'bg-primary border-primary text-white'
+                : 'border-gray-300 dark:border-gray-600'"
+            >
+              <UIcon v-if="log.dosesCompleted?.[i]" name="i-lucide-check" class="w-3 h-3" />
+            </span>
+            <span :class="log.dosesCompleted?.[i] && 'line-through text-gray-400'">
+              {{ dose.dosage }}{{ dose.dosageUnit || '' }}
+              <template v-if="dose.timeOfDay"> — {{ dose.timeOfDay }}</template>
+              <template v-if="dose.timing">, {{ dose.timing }}</template>
+            </span>
+          </button>
         </div>
       </div>
     </div>

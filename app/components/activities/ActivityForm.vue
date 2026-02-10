@@ -2,6 +2,13 @@
 import type { Activity } from '#shared/db/schema';
 import { ActivityFormSchema } from '#shared/schemas/activities';
 
+interface DoseState {
+  dosage?: number;
+  dosageUnit?: string;
+  timeOfDay?: string;
+  timing?: string;
+}
+
 interface Props {
   activity?: Activity;
   protocolId?: string;
@@ -22,6 +29,8 @@ const isOpen = computed({
   set: (value: boolean) => emit('update:open', value),
 });
 
+const doses = ref<DoseState[]>([]);
+
 const state = reactive({
   name: '',
   activityType: 'habit' as 'warmup' | 'exercise' | 'supplement' | 'habit',
@@ -31,9 +40,6 @@ const state = reactive({
   reps: undefined as number | undefined,
   weight: undefined as number | undefined,
   equipmentType: undefined as string | undefined,
-  dosage: undefined as number | undefined,
-  dosageUnit: undefined as string | undefined,
-  timing: undefined as string | undefined,
   duration: undefined as number | undefined,
   restTime: undefined as number | undefined,
 });
@@ -82,11 +88,11 @@ watch(
       state.reps = activity.reps;
       state.weight = activity.weight;
       state.equipmentType = activity.equipmentType;
-      state.dosage = activity.dosage;
-      state.dosageUnit = activity.dosageUnit;
-      state.timing = activity.timing;
       state.duration = activity.duration;
       state.restTime = activity.restTime;
+      doses.value = activity.doses?.length
+        ? activity.doses.map(d => ({ ...d }))
+        : [{}];
     }
     else {
       resetForm();
@@ -103,11 +109,9 @@ function resetForm() {
   state.reps = undefined;
   state.weight = undefined;
   state.equipmentType = undefined;
-  state.dosage = undefined;
-  state.dosageUnit = undefined;
-  state.timing = undefined;
   state.duration = undefined;
   state.restTime = undefined;
+  doses.value = [{}];
   validationError.value = null;
 }
 
@@ -127,9 +131,9 @@ function getFormData() {
     data.restTime = state.restTime;
   }
   else if (state.activityType === 'supplement') {
-    data.dosage = state.dosage;
-    data.dosageUnit = state.dosageUnit;
-    data.timing = state.timing;
+    const nonEmpty = doses.value.filter(d => d.dosage || d.dosageUnit || d.timeOfDay || d.timing);
+    if (nonEmpty.length > 0)
+      data.doses = nonEmpty;
   }
   else if (state.activityType === 'warmup') {
     data.duration = state.duration;
@@ -138,6 +142,21 @@ function getFormData() {
 
   return data;
 }
+
+function addDose() {
+  doses.value.push({});
+}
+
+function removeDose(index: number) {
+  if (doses.value.length > 1)
+    doses.value.splice(index, 1);
+}
+
+// Init doses when switching to supplement
+watch(() => state.activityType, (type) => {
+  if (type === 'supplement' && doses.value.length === 0)
+    doses.value = [{}];
+});
 
 async function onSubmit() {
   validationError.value = null;
@@ -259,27 +278,63 @@ async function onSubmit() {
             v-if="state.activityType === 'supplement'"
             class="space-y-3 rounded-lg border-l-3 border-blue-400 bg-blue-50/50 p-4 dark:border-blue-500 dark:bg-blue-950/20"
           >
-            <div class="flex items-center gap-2 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
-              <UIcon name="i-lucide-pill" class="h-3.5 w-3.5" />
-              Supplement Details
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs font-semibold tracking-wide text-blue-600 uppercase dark:text-blue-400">
+                <UIcon name="i-lucide-pill" class="h-3.5 w-3.5" />
+                Doses
+              </div>
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="primary"
+                icon="i-lucide-plus"
+                @click="addDose"
+              >
+                Add dose
+              </UButton>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <UFormField label="Dosage">
-                <UInput v-model.number="state.dosage" type="number" min="0.1" step="0.1" placeholder="500" />
-              </UFormField>
-              <UFormField label="Unit">
-                <USelect
-                  v-model="state.dosageUnit"
-                  :items="dosageUnitOptions"
-                  placeholder="Select unit"
+            <div
+              v-for="(dose, index) in doses"
+              :key="index"
+              class="space-y-2 rounded-md border border-blue-200 bg-white/60 p-3 dark:border-blue-800 dark:bg-gray-900/40"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-gray-500">Dose {{ index + 1 }}</span>
+                <UButton
+                  v-if="doses.length > 1"
+                  size="xs"
+                  variant="ghost"
+                  color="error"
+                  icon="i-lucide-x"
+                  @click="removeDose(index)"
                 />
-              </UFormField>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <UFormField label="Dosage">
+                  <UInput v-model.number="dose.dosage" type="number" min="0.1" step="0.1" placeholder="500" />
+                </UFormField>
+                <UFormField label="Unit">
+                  <USelect
+                    v-model="dose.dosageUnit"
+                    :items="dosageUnitOptions"
+                    placeholder="Select unit"
+                  />
+                </UFormField>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <UFormField label="Time of Day">
+                  <USelect
+                    v-model="dose.timeOfDay"
+                    :items="timeOfDayOptions"
+                    placeholder="Any time"
+                  />
+                </UFormField>
+                <UFormField label="Timing">
+                  <UInput v-model="dose.timing" placeholder="With food..." />
+                </UFormField>
+              </div>
             </div>
-
-            <UFormField label="Timing">
-              <UInput v-model="state.timing" placeholder="With food, before bed..." />
-            </UFormField>
           </div>
         </Transition>
 

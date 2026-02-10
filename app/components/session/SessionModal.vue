@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Activity, Protocol } from '#shared/db/schema';
+import type { Protocol } from '#shared/db/schema';
 
 interface Props {
   protocol: Protocol | null;
@@ -31,6 +31,7 @@ const {
   initSession,
   updateActivityLog,
   toggleActivity,
+  toggleDose,
   saveSession,
 } = useSession();
 
@@ -38,7 +39,7 @@ const toast = useToast();
 const protocolActivities = computed(() => {
   if (!props.protocol)
     return [];
-  return activities.value.filter((a: Activity) => a.protocolId === props.protocol!.id);
+  return activities.value.filter(a => a.protocolId === props.protocol!.id);
 });
 
 const formattedDate = computed(() => {
@@ -121,6 +122,7 @@ async function handleSave() {
               :activity="activity"
               :log="activityLogs.get(activity.id) || { activityId: activity.id, completed: false }"
               @toggle="toggleActivity(activity.id)"
+              @toggle-dose="toggleDose(activity.id, $event)"
               @update="updateActivityLog(activity.id, $event)"
             />
           </div>

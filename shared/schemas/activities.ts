@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const SupplementDoseFormSchema = z.object({
+  dosage: z.number().positive().optional(),
+  dosageUnit: z.string().max(20).optional(),
+  timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
+  timing: z.string().max(100).optional(),
+});
+
 const baseFormSchema = z.object({
   name: z.string().min(1, 'Name required').max(100),
   activityType: z.enum(['warmup', 'exercise', 'supplement', 'habit']),
@@ -23,6 +30,8 @@ export const ActivityFormSchema = z.discriminatedUnion('activityType', [
   }),
   baseFormSchema.extend({
     activityType: z.literal('supplement'),
+    doses: z.array(SupplementDoseFormSchema).optional(),
+    // Keep old fields for migration compat
     dosage: z.number().positive().optional(),
     dosageUnit: z.string().max(20).optional(),
     timing: z.string().max(100).optional(),
