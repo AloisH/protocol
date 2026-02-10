@@ -26,8 +26,9 @@ export function useProtocols() {
   async function createProtocol(
     name: string,
     description: string,
-    duration: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily',
+    duration: Protocol['duration'] = 'daily',
     category: string = 'general',
+    scheduleDays?: Protocol['scheduleDays'],
   ) {
     error.value = null;
     try {
@@ -40,6 +41,7 @@ export function useProtocols() {
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...(scheduleDays?.length ? { scheduleDays } : {}),
       };
 
       // Validate

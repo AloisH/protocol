@@ -26,7 +26,8 @@ const isOpen = computed({
 const state = reactive({
   name: props.protocol?.name ?? '',
   description: props.protocol?.description ?? '',
-  duration: (props.protocol?.duration ?? 'daily') as 'daily' | 'weekly' | 'monthly' | 'yearly',
+  duration: (props.protocol?.duration ?? 'daily') as 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom',
+  scheduleDays: [...(props.protocol?.scheduleDays ?? [])] as ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[],
 });
 
 const loading = ref(false);
@@ -37,7 +38,37 @@ const durationOptions = [
   { label: 'Weekly', value: 'weekly' },
   { label: 'Monthly', value: 'monthly' },
   { label: 'Yearly', value: 'yearly' },
+  { label: 'Custom days', value: 'custom' },
 ];
+
+const dayOptions = [
+  { key: 'mon', label: 'M' },
+  { key: 'tue', label: 'T' },
+  { key: 'wed', label: 'W' },
+  { key: 'thu', label: 'T' },
+  { key: 'fri', label: 'F' },
+  { key: 'sat', label: 'S' },
+  { key: 'sun', label: 'S' },
+] as const;
+
+type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+function toggleDay(day: DayKey) {
+  const idx = state.scheduleDays.indexOf(day);
+  if (idx >= 0) {
+    state.scheduleDays.splice(idx, 1);
+  }
+  else {
+    state.scheduleDays.push(day);
+  }
+}
+
+// Reset scheduleDays when switching away from custom
+watch(() => state.duration, (val) => {
+  if (val !== 'custom') {
+    state.scheduleDays = [];
+  }
+});
 
 const schema = ProtocolFormSchema;
 
@@ -47,7 +78,8 @@ watch(
   (newProtocol) => {
     state.name = newProtocol?.name ?? '';
     state.description = newProtocol?.description ?? '';
-    state.duration = (newProtocol?.duration ?? 'daily') as 'daily' | 'weekly' | 'monthly' | 'yearly';
+    state.duration = (newProtocol?.duration ?? 'daily') as 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+    state.scheduleDays = newProtocol?.scheduleDays ? [...newProtocol.scheduleDays] as DayKey[] : [];
     error.value = null;
   },
 );
@@ -64,6 +96,7 @@ async function handleSubmit() {
       state.name = '';
       state.description = '';
       state.duration = 'daily';
+      state.scheduleDays = [];
     }
 
     isOpen.value = false;
@@ -108,8 +141,24 @@ async function handleSubmit() {
             v-model="state.duration"
             :items="durationOptions"
             placeholder="Select frequency"
+            class="w-48"
           />
         </UFormField>
+
+        <div v-if="state.duration === 'custom'" class="flex gap-1">
+          <UButton
+            v-for="day in dayOptions"
+            :key="day.key"
+            size="sm"
+            :color="state.scheduleDays.includes(day.key) ? 'primary' : 'neutral'"
+            :variant="state.scheduleDays.includes(day.key) ? 'solid' : 'outline'"
+            square
+            class="rounded-full"
+            @click="toggleDay(day.key)"
+          >
+            {{ day.label }}
+          </UButton>
+        </div>
 
         <UAlert
           v-if="error"

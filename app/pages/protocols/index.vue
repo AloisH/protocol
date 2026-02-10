@@ -7,7 +7,7 @@ useSeoMeta({
 });
 
 const { protocols, loading, createProtocol, updateProtocol, deleteProtocol, loadProtocols } = useProtocols();
-const { loadActivities } = useActivities();
+const { activities, loadActivities } = useActivities();
 
 const formOpen = ref(false);
 const deleteDialogOpen = ref(false);
@@ -59,10 +59,13 @@ function toggleExpanded(protocolId: string) {
 async function handleFormSubmit(data: any) {
   try {
     if (isEditMode.value && selectedProtocol.value) {
-      await updateProtocol(selectedProtocol.value.id, data);
+      await updateProtocol(selectedProtocol.value.id, {
+        ...data,
+        scheduleDays: data.duration === 'custom' ? data.scheduleDays : undefined,
+      });
     }
     else {
-      await createProtocol(data.name, data.description, data.duration);
+      await createProtocol(data.name, data.description, data.duration, 'general', data.scheduleDays);
     }
     formOpen.value = false;
     selectedProtocol.value = null;
@@ -138,6 +141,7 @@ async function handleDeleteConfirm() {
         :key="protocol.id"
         :protocol="protocol"
         :expanded="expandedProtocols.has(protocol.id)"
+        :activity-count="activities.filter(a => a.protocolId === protocol.id).length"
         @edit="openEditForm"
         @delete="openDeleteDialog"
         @toggle="toggleExpanded(protocol.id)"

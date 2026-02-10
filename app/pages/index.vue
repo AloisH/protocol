@@ -53,6 +53,23 @@ async function onSessionSaved() {
   }
 }
 
+const dayLabels: Record<string, string> = {
+  mon: 'Mon',
+  tue: 'Tue',
+  wed: 'Wed',
+  thu: 'Thu',
+  fri: 'Fri',
+  sat: 'Sat',
+  sun: 'Sun',
+};
+
+function durationLabel(protocol: Protocol) {
+  if (protocol.scheduleDays?.length) {
+    return protocol.scheduleDays.map(d => dayLabels[d] ?? d).join(', ');
+  }
+  return protocol.duration;
+}
+
 const formattedDate = computed(() => {
   return new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -201,7 +218,7 @@ const formattedDate = computed(() => {
 
             <!-- Duration Badge -->
             <UBadge color="neutral" variant="soft" class="flex-shrink-0 capitalize">
-              {{ protocol.duration }}
+              {{ durationLabel(protocol) }}
             </UBadge>
           </div>
         </UCard>

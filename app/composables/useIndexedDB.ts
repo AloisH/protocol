@@ -112,7 +112,7 @@ export function useIndexedDB() {
         version: 1,
         exportedAt: new Date(),
         data: {
-          protocols: await db.protocols.toArray(),
+          protocols: await db.protocols.toArray() as ExportData['data']['protocols'],
           activities: await db.activities.toArray() as ExportData['data']['activities'],
           trackingLogs: await db.trackingLogs.toArray() as ExportData['data']['trackingLogs'],
           settings: await db.settings.toArray(),

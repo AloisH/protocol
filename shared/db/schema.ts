@@ -6,7 +6,8 @@ export interface Protocol {
   name: string;
   description?: string;
   category: string;
-  duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  duration: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+  scheduleDays?: readonly ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[];
   status: 'active' | 'paused' | 'completed';
   targetMetric?: string;
   createdAt: Date;

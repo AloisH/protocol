@@ -24,8 +24,14 @@ export function useDaily() {
     return Math.ceil(d.getDate() / 7);
   });
 
+  const dayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+
   // Check if protocol is scheduled for today based on duration
   function isScheduledToday(protocol: Protocol): boolean {
+    if (protocol.scheduleDays?.length) {
+      return protocol.scheduleDays.includes(dayMap[dayOfWeek.value]!);
+    }
+
     switch (protocol.duration) {
       case 'daily':
         return true;
@@ -40,9 +46,20 @@ export function useDaily() {
         const d = new Date();
         return d.getMonth() === 0 && d.getDate() === 1;
       }
+      case 'custom':
+        // Custom without scheduleDays set — don't show
+        return false;
       default:
         return false;
     }
+  }
+
+  // Check if a given date is a scheduled day for a custom-day protocol
+  function isScheduledDay(protocol: Protocol, date: Date): boolean {
+    if (protocol.scheduleDays?.length) {
+      return protocol.scheduleDays.includes(dayMap[date.getDay()]!);
+    }
+    return true; // non-custom protocols: every day counts
   }
 
   // Load today's protocols and completions
@@ -152,18 +169,23 @@ export function useDaily() {
     let streak = 0;
     const checkDate = new Date();
 
-    // For daily protocols, check consecutive days
-    if (protocol.duration === 'daily') {
-      for (const completion of sorted) {
-        const expectedDate = checkDate.toISOString().split('T')[0]!;
-        if (completion.date === expectedDate) {
-          streak++;
-          checkDate.setDate(checkDate.getDate() - 1);
+    // For custom-day or daily protocols, check consecutive scheduled days
+    if (protocol.scheduleDays?.length || protocol.duration === 'daily') {
+      // Build a set of completed dates for fast lookup
+      const completedDates = new Set(sorted.map(c => c.date));
+
+      // Walk backwards through days, only checking scheduled ones
+      for (let i = 0; i < 365; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0]!;
+        if (isScheduledDay(protocol, checkDate)) {
+          if (completedDates.has(dateStr)) {
+            streak++;
+          }
+          else {
+            break;
+          }
         }
-        else if (completion.date < expectedDate) {
-          // Gap in streak
-          break;
-        }
+        checkDate.setDate(checkDate.getDate() - 1);
       }
     }
     else {
@@ -189,10 +211,22 @@ export function useDaily() {
       .and(c => c.date >= startDateStr)
       .count();
 
-    // For daily protocols, rate is completions / days
     const protocol = todaysProtocols.value.find(p => p.id === protocolId);
     if (!protocol)
       return 0;
+
+    // For custom-day protocols, count scheduled days in period
+    if (protocol.scheduleDays?.length) {
+      let scheduledCount = 0;
+      const d = new Date();
+      for (let i = 0; i < days; i++) {
+        d.setDate(d.getDate() - (i === 0 ? 0 : 1));
+        if (isScheduledDay(protocol, d)) {
+          scheduledCount++;
+        }
+      }
+      return scheduledCount > 0 ? Math.round((recentCompletions / scheduledCount) * 100) : 0;
+    }
 
     if (protocol.duration === 'daily') {
       return Math.round((recentCompletions / days) * 100);
