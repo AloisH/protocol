@@ -6,7 +6,7 @@ useSeoMeta({
   description: 'Track your daily protocols and monitor progress.',
 });
 
-const { todaysProtocols, loading, progress, loadToday, isCompletedToday, getStreak } = useDaily();
+const { todaysProtocols, loading, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
 const { loadActivities } = useActivities();
 const streaks = ref<Record<string, number>>({});
 const isClient = ref(false);
@@ -37,6 +37,12 @@ watch(() => todaysProtocols.value, async () => {
 function openSession(protocol: Protocol) {
   activeProtocol.value = protocol;
   sessionModalOpen.value = true;
+}
+
+async function quickToggle(protocolId: string) {
+  await toggleCompletion(protocolId);
+  await loadToday();
+  streaks.value[protocolId] = await getStreak(protocolId);
 }
 
 async function onSessionSaved() {
@@ -144,19 +150,22 @@ const formattedDate = computed(() => {
         >
           <div class="flex items-center gap-4">
             <!-- Checkbox -->
-            <div
-              class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all" :class="[
+            <button
+              type="button"
+              class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all"
+              :class="[
                 isCompletedToday(protocol.id)
                   ? 'bg-primary border-primary text-white'
-                  : 'border-gray-300 dark:border-gray-600 group-hover:border-primary',
+                  : 'border-gray-300 dark:border-gray-600 hover:border-primary',
               ]"
+              @click.stop="quickToggle(protocol.id)"
             >
               <UIcon
                 v-if="isCompletedToday(protocol.id)"
                 name="i-lucide-check"
                 class="w-5 h-5"
               />
-            </div>
+            </button>
 
             <!-- Protocol Info -->
             <div class="flex-1 min-w-0">
@@ -171,6 +180,16 @@ const formattedDate = computed(() => {
                 {{ protocol.description }}
               </p>
             </div>
+
+            <!-- Execute Button -->
+            <UButton
+              :icon="isCompletedToday(protocol.id) ? 'i-lucide-repeat' : 'i-lucide-play'"
+              variant="soft"
+              size="sm"
+              class="flex-shrink-0"
+              :to="`/execute/${protocol.id}`"
+              @click.stop
+            />
 
             <!-- Streak Badge -->
             <div v-if="(streaks[protocol.id] ?? 0) > 0" class="flex-shrink-0">

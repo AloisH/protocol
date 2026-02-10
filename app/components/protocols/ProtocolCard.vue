@@ -53,7 +53,7 @@ const protocolActivities = computed(() => {
           >
             <UIcon
               :name="expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-              class="mt-0.5 flex-shrink-0 text-gray-400"
+              class="mt-1.5 flex-shrink-0 text-gray-400"
             />
             <div class="flex-1">
               <h3 class="font-bold text-lg truncate">
