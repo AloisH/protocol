@@ -10,15 +10,23 @@ const protocolId = route.params.protocolId as string;
 // Composables
 const { loadGroups, groups } = useActivityGroups();
 const { loadActivities, activitiesForGroup, ungroupedActivities } = useActivities();
-const { initSession, updateActivityLog, activityLogs, sessionNotes, sessionRating, saveSession } = useSession();
+const { initSession, updateActivityLog, toggleDose, activityLogs, sessionNotes, sessionRating, saveSession } = useSession();
 const { playBeep } = useBeep();
 
-// State machine: loading → active → rest → summary
-const phase = ref<'loading' | 'active' | 'rest' | 'summary'>('loading');
+// State machine: loading → active → rest → summary | error
+const phase = ref<'loading' | 'active' | 'rest' | 'summary' | 'error'>('loading');
+const errorMessage = ref('');
 const paused = ref(false);
 const startTime = ref(0);
 const finalElapsed = ref(0);
 const skippedCount = ref(0);
+
+// Exit confirmation
+const showExitConfirm = ref(false);
+
+// Per-activity notes
+const showActivityNotes = ref(false);
+const activityNotesText = ref('');
 
 // Flattened activity list
 const flatActivities = ref<Activity[]>([]);
@@ -36,14 +44,10 @@ const timer = useTimer(() => {
     advanceAfterRest();
   }
   else if (phase.value === 'active') {
-    completeCurrentActivity();
-    const a = currentActivity.value;
-    if (a?.restTime && a.restTime > 0)
-      startRestThenNext(a.restTime);
-    else
-      goNext();
+    finishCurrentAndAdvance();
   }
 });
+
 const activityTypeIcons: Record<string, string> = {
   exercise: 'i-lucide-dumbbell',
   warmup: 'i-lucide-zap',
@@ -78,14 +82,14 @@ function formatTime(seconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// Exercise target display
+// Exercise target display (type-safe)
 function exerciseTarget(a: Activity) {
   const parts: string[] = [];
-  if (a.sets)
+  if (a.sets != null && a.sets > 0)
     parts.push(`${a.sets}x${a.reps ?? '?'}`);
-  else if (a.reps)
+  else if (a.reps != null && a.reps > 0)
     parts.push(`${a.reps} reps`);
-  if (a.weight)
+  if (a.weight != null && a.weight > 0)
     parts.push(`@ ${a.weight}kg`);
   return parts.join(' ');
 }
@@ -119,50 +123,82 @@ function formatElapsed(sec: number) {
   return `${m}m ${s}s`;
 }
 
+// Set dots for exercises
+const totalSetsForCurrent = computed(() => {
+  const a = currentActivity.value;
+  if (!a || a.activityType !== 'exercise')
+    return 0;
+  return a.sets || 1;
+});
+
 // ---- Load & flatten ----
 async function load() {
-  await Promise.all([
-    loadGroups(protocolId),
-    loadActivities(protocolId),
-  ]);
-  await initSession(protocolId);
+  try {
+    await Promise.all([
+      loadGroups(protocolId),
+      loadActivities(protocolId),
+    ]);
+    await initSession(protocolId);
 
-  // Flatten: grouped activities (by group order), then ungrouped
-  const flat: Activity[] = [];
-  for (const group of groups.value) {
-    const groupActs = activitiesForGroup(group.id);
-    for (const a of groupActs) {
+    // Flatten: grouped activities (by group order), then ungrouped
+    const flat: Activity[] = [];
+    for (const group of groups.value) {
+      const groupActs = activitiesForGroup(group.id);
+      for (const a of groupActs) {
+        flat.push(a);
+      }
+    }
+    for (const a of ungroupedActivities.value) {
       flat.push(a);
     }
-  }
-  for (const a of ungroupedActivities.value) {
-    flat.push(a);
-  }
-  flatActivities.value = flat;
+    flatActivities.value = flat;
 
-  if (flat.length === 0) {
-    toast.add({ title: 'No activities', description: 'Protocol has no activities', color: 'warning' });
-    await navigateTo('/');
-    return;
-  }
+    if (flat.length === 0) {
+      toast.add({ title: 'No activities', description: 'Protocol has no activities', color: 'warning' });
+      await navigateTo('/');
+      return;
+    }
 
-  startTime.value = Date.now();
-  phase.value = 'active';
-  startActivityPhase();
+    startTime.value = Date.now();
+    phase.value = 'active';
+    startActivityPhase();
+  }
+  catch (e) {
+    errorMessage.value = e instanceof Error ? e.message : String(e);
+    phase.value = 'error';
+  }
 }
 
 // ---- Activity phase logic ----
 function startActivityPhase() {
   timer.reset();
   currentSet.value = 1;
+  showActivityNotes.value = false;
+  activityNotesText.value = '';
   const a = currentActivity.value;
   if (!a)
     return;
+
+  // Load existing notes
+  const log = activityLogs.value.get(a.id);
+  if (log?.notes) {
+    activityNotesText.value = log.notes;
+  }
 
   if (a.activityType === 'warmup' && a.duration) {
     timerTotal.value = a.duration;
     timer.start(a.duration);
   }
+}
+
+// DRY: complete current activity and advance (used by timer callback + handlePrimaryAction)
+function finishCurrentAndAdvance() {
+  completeCurrentActivity();
+  const a = currentActivity.value;
+  if (a?.restTime && a.restTime > 0)
+    startRestThenNext(a.restTime);
+  else
+    goNext();
 }
 
 function handlePrimaryAction() {
@@ -171,7 +207,6 @@ function handlePrimaryAction() {
     return;
 
   if (phase.value === 'rest') {
-    // During rest, primary skips rest
     timer.reset();
     advanceAfterRest();
     return;
@@ -181,23 +216,38 @@ function handlePrimaryAction() {
   if (a.activityType === 'warmup') {
     if (timer.isRunning.value)
       timer.reset();
-    completeCurrentActivity();
-    if (a.restTime && a.restTime > 0)
-      startRestThenNext(a.restTime);
-    else
-      goNext();
+    finishCurrentAndAdvance();
   }
   else if (a.activityType === 'exercise') {
     const totalSets = a.sets || 1;
     if (currentSet.value < totalSets) {
+      // Set completed feedback
+      toast.add({ title: `Set ${currentSet.value} done`, color: 'success', icon: 'i-lucide-check' });
+      playBeep(500, 100);
       currentSet.value++;
       if (a.restTime && a.restTime > 0)
         startRest(a.restTime);
     }
     else {
+      // Last set
+      toast.add({ title: `Set ${currentSet.value} done`, color: 'success', icon: 'i-lucide-check' });
+      playBeep(500, 100);
       completeCurrentActivity();
       goNext();
     }
+  }
+  else if (a.activityType === 'supplement') {
+    // Mark all unchecked doses complete
+    const log = activityLogs.value.get(a.id);
+    if (log?.dosesCompleted) {
+      for (let i = 0; i < log.dosesCompleted.length; i++) {
+        if (!log.dosesCompleted[i]) {
+          toggleDose(a.id, i);
+        }
+      }
+    }
+    completeCurrentActivity();
+    goNext();
   }
   else {
     completeCurrentActivity();
@@ -215,7 +265,7 @@ function startRest(seconds: number) {
   timer.start(seconds);
 }
 
-// Rest then move to next activity (e.g. after warmup)
+// Rest then move to next activity
 function startRestThenNext(seconds: number) {
   goNextAfterRest.value = true;
   phase.value = 'rest';
@@ -235,7 +285,13 @@ function completeCurrentActivity() {
   const a = currentActivity.value;
   if (!a)
     return;
-  updateActivityLog(a.id, { completed: true });
+  // Save any pending notes
+  if (activityNotesText.value.trim()) {
+    updateActivityLog(a.id, { completed: true, notes: activityNotesText.value.trim() });
+  }
+  else {
+    updateActivityLog(a.id, { completed: true });
+  }
 }
 
 function goNext() {
@@ -260,6 +316,23 @@ function skip() {
   goNext();
 }
 
+function goPrevious() {
+  if (currentIndex.value <= 0)
+    return;
+  timer.reset();
+  // Undo completion of current activity
+  const a = currentActivity.value;
+  if (a)
+    updateActivityLog(a.id, { completed: false });
+  currentIndex.value--;
+  // Undo completion of previous activity too
+  const prev = currentActivity.value;
+  if (prev)
+    updateActivityLog(prev.id, { completed: false });
+  phase.value = 'active';
+  startActivityPhase();
+}
+
 function togglePause() {
   paused.value = !paused.value;
   if (paused.value) {
@@ -278,8 +351,50 @@ async function handleSave() {
   }
 }
 
-function exit() {
+function requestExit() {
+  if (phase.value === 'active' || phase.value === 'rest') {
+    showExitConfirm.value = true;
+  }
+  else {
+    navigateTo('/');
+  }
+}
+
+function confirmExit() {
+  showExitConfirm.value = false;
   navigateTo('/');
+}
+
+// Route leave guard
+onBeforeRouteLeave(() => {
+  if (phase.value === 'active' || phase.value === 'rest') {
+    showExitConfirm.value = true;
+    return false;
+  }
+});
+
+// Tab close guard
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (phase.value === 'active' || phase.value === 'rest') {
+    e.preventDefault();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', onBeforeUnload);
+  load();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', onBeforeUnload);
+});
+
+// Handle dose toggle in execution
+function handleDoseToggle(doseIndex: number) {
+  const a = currentActivity.value;
+  if (!a)
+    return;
+  toggleDose(a.id, doseIndex);
 }
 
 // Primary button label
@@ -295,12 +410,17 @@ const primaryLabel = computed(() => {
       return 'Next Set';
     return 'Done';
   }
-  if (a.activityType === 'warmup' && timer.isRunning.value)
-    return 'Done';
   return 'Done';
 });
 
-onMounted(load);
+// Save notes on input
+function onNotesInput(value: string) {
+  activityNotesText.value = value;
+  const a = currentActivity.value;
+  if (a) {
+    updateActivityLog(a.id, { notes: value.trim() || undefined });
+  }
+}
 </script>
 
 <template>
@@ -309,6 +429,17 @@ onMounted(load);
       <!-- Loading -->
       <div v-if="phase === 'loading'" class="flex-1 flex items-center justify-center">
         <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-neutral-500" />
+      </div>
+
+      <!-- Error -->
+      <div v-else-if="phase === 'error'" class="flex-1 flex flex-col items-center justify-center gap-4 px-6">
+        <UIcon name="i-lucide-alert-triangle" class="w-12 h-12 text-red-400" />
+        <p class="text-neutral-300 text-center">
+          {{ errorMessage || 'Something went wrong' }}
+        </p>
+        <UButton icon="i-lucide-arrow-left" variant="outline" @click="navigateTo('/')">
+          Go Back
+        </UButton>
       </div>
 
       <!-- Summary -->
@@ -373,7 +504,7 @@ onMounted(load);
             <UButton size="xl" block icon="i-lucide-save" @click="handleSave">
               Save
             </UButton>
-            <UButton size="xl" variant="ghost" color="neutral" block @click="exit">
+            <UButton size="xl" variant="ghost" color="neutral" block @click="navigateTo('/')">
               Discard
             </UButton>
           </div>
@@ -389,7 +520,7 @@ onMounted(load);
             variant="ghost"
             color="neutral"
             size="lg"
-            @click="exit"
+            @click="requestExit"
           />
           <span class="text-sm text-neutral-400">
             {{ currentIndex + 1 }} of {{ totalActivities }}
@@ -460,24 +591,83 @@ onMounted(load);
             </span>
           </div>
 
-          <!-- Exercise details -->
-          <div v-if="currentActivity?.activityType === 'exercise' && phase === 'active'" class="text-center space-y-2">
-            <p class="text-4xl font-mono font-bold">
-              {{ exerciseTarget(currentActivity) }}
-            </p>
-            <p v-if="(currentActivity.sets ?? 0) > 1" class="text-lg text-neutral-400">
-              Set {{ currentSet }} of {{ currentActivity.sets }}
+          <!-- Warmup no-duration indicator -->
+          <div
+            v-if="currentActivity?.activityType === 'warmup' && !currentActivity.duration && phase === 'active'"
+            class="flex flex-col items-center gap-2 text-neutral-400"
+          >
+            <UIcon name="i-lucide-timer-off" class="w-10 h-10" />
+            <p class="text-sm">
+              No timer — tap Done when ready
             </p>
           </div>
 
-          <!-- Supplement details -->
-          <div v-if="currentActivity?.activityType === 'supplement' && currentActivity.doses?.length" class="text-center space-y-1">
-            <p v-for="(dose, i) in currentActivity.doses" :key="i" class="text-lg text-neutral-300">
-              {{ dose.dosage }}{{ dose.dosageUnit || '' }}
-              <template v-if="dose.timeOfDay">
-                — {{ dose.timeOfDay }}
-              </template>
+          <!-- Exercise details -->
+          <div v-if="currentActivity?.activityType === 'exercise' && phase === 'active'" class="text-center space-y-3">
+            <p class="text-4xl font-mono font-bold">
+              {{ exerciseTarget(currentActivity) }}
             </p>
+            <p v-if="totalSetsForCurrent > 1" class="text-lg text-neutral-400">
+              Set {{ currentSet }} of {{ totalSetsForCurrent }}
+            </p>
+            <!-- Set dots -->
+            <div v-if="totalSetsForCurrent > 1" class="flex items-center justify-center gap-2">
+              <span
+                v-for="s in totalSetsForCurrent"
+                :key="s"
+                class="w-3 h-3 rounded-full transition-colors"
+                :class="s < currentSet ? 'bg-green-400' : s === currentSet ? 'ring-2 ring-green-400 bg-transparent' : 'bg-neutral-700'"
+              />
+            </div>
+          </div>
+
+          <!-- Supplement per-dose toggles -->
+          <div v-if="currentActivity?.activityType === 'supplement' && currentActivity.doses?.length && phase === 'active'" class="w-full max-w-xs space-y-2">
+            <button
+              v-for="(dose, i) in currentActivity.doses"
+              :key="i"
+              type="button"
+              class="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors"
+              :class="activityLogs.get(currentActivity.id)?.dosesCompleted?.[i]
+                ? 'bg-green-900/30 border border-green-700'
+                : 'bg-neutral-900 border border-neutral-800 hover:border-neutral-700'"
+              @click="handleDoseToggle(i)"
+            >
+              <span
+                class="flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+                :class="activityLogs.get(currentActivity.id)?.dosesCompleted?.[i]
+                  ? 'bg-green-500 border-green-500 text-white'
+                  : 'border-neutral-600'"
+              >
+                <UIcon v-if="activityLogs.get(currentActivity.id)?.dosesCompleted?.[i]" name="i-lucide-check" class="w-3 h-3" />
+              </span>
+              <span
+                class="text-sm"
+                :class="activityLogs.get(currentActivity.id)?.dosesCompleted?.[i] ? 'line-through text-neutral-500' : 'text-neutral-200'"
+              >
+                {{ dose.dosage }}{{ dose.dosageUnit || '' }}
+                <template v-if="dose.timeOfDay"> — {{ dose.timeOfDay }}</template>
+              </span>
+            </button>
+          </div>
+
+          <!-- Per-activity notes -->
+          <div v-if="phase === 'active' && currentActivity" class="w-full max-w-xs">
+            <button
+              v-if="!showActivityNotes"
+              type="button"
+              class="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+              @click="showActivityNotes = true"
+            >
+              + Add note
+            </button>
+            <UTextarea
+              v-else
+              :model-value="activityNotesText"
+              placeholder="Note for this activity..."
+              :rows="2"
+              @update:model-value="onNotesInput"
+            />
           </div>
         </div>
 
@@ -486,11 +676,53 @@ onMounted(load);
           <UButton size="xl" block @click="handlePrimaryAction">
             {{ primaryLabel }}
           </UButton>
-          <UButton size="xl" variant="outline" block @click="skip">
-            Skip
-          </UButton>
+          <div class="flex gap-3">
+            <UButton
+              v-if="currentIndex > 0"
+              size="xl"
+              variant="outline"
+              color="neutral"
+              class="flex-1"
+              icon="i-lucide-arrow-left"
+              @click="goPrevious"
+            >
+              Previous
+            </UButton>
+            <UButton
+              size="xl"
+              variant="outline"
+              class="flex-1"
+              @click="skip"
+            >
+              Skip
+            </UButton>
+          </div>
         </div>
       </template>
+
+      <!-- Exit confirmation modal -->
+      <UModal v-model:open="showExitConfirm">
+        <template #body>
+          <div class="space-y-2">
+            <h3 class="text-lg font-semibold">
+              Exit session?
+            </h3>
+            <p class="text-sm text-neutral-500">
+              Progress will be lost.
+            </p>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex gap-3 w-full">
+            <UButton variant="outline" color="neutral" class="flex-1" @click="showExitConfirm = false">
+              Cancel
+            </UButton>
+            <UButton color="error" class="flex-1" @click="confirmExit">
+              Exit
+            </UButton>
+          </div>
+        </template>
+      </UModal>
     </div>
 
     <template #fallback>
