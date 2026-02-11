@@ -1,189 +1,137 @@
 # Troubleshooting Guide
 
-Common issues and fixes for Bistro development.
+Common issues and fixes for Protocol development.
 
 ---
 
-## Database
+## IndexedDB / Dexie
 
-### "Cannot find module '@prisma/client'"
+### "Cannot open database" or schema errors
 
-```bash
-bun db:generate  # Generate Prisma Client
-```
+Clear IndexedDB and reload:
+- DevTools → Application → IndexedDB → ProtocolDB → Delete database
+- Reload page
 
-### "Database connection failed"
+### "Failed to execute 'transaction'" on SSR
 
-```bash
-docker compose up -d  # Start postgres
-# Check DATABASE_URL matches docker-compose.yml credentials
-```
-
-### "Type errors after DB schema change"
-
-```bash
-bun db:generate  # Regenerate types
-bun typecheck    # Verify
-```
-
-### "Connection pool exhausted"
-
-Using multiple PrismaClient instances. Always use singleton:
+Missing SSR guard. Add to composable:
 
 ```typescript
-import { db } from '~/server/utils/db';
+if (import.meta.server) return
 ```
 
-### "Prisma client errors after schema change"
+### Data not loading on page
 
-```bash
-bun db:generate
-bun db:migrate
-```
-
----
-
-## Authentication
-
-### "OAuth buttons not showing"
-
-Add to `.env`:
-
-```bash
-GITHUB_CLIENT_ID=...
-GITHUB_CLIENT_SECRET=...
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-```
-
-Restart dev server.
-
-### "Session not updating after login"
-
-Must call `fetchSession()` after auth operations:
+Ensure data fetch is in `onMounted()` (client-only lifecycle):
 
 ```typescript
-await signIn.email({ email, password });
-await fetchSession(); // Add this
-await navigateTo('/org/[slug]/dashboard');
+onMounted(async () => {
+  await loadData()
+})
 ```
 
-### "Unauthorized on protected route"
+### Migration not running
 
-Ensure session cookie sent. Check DevTools → Network → Cookies.
+Dexie migrations run once per browser per version. To re-test:
+1. Delete database in DevTools
+2. Reload page
 
 ---
 
-## Build & CI
+## Nuxt UI v4
 
-### "Build fails in CI but works locally"
+### USelect not showing options
 
-Run full CI sequence locally:
+Use `:items` not `:options`:
+```vue
+<!-- Correct -->
+<USelect :items="options" v-model="selected" />
 
-```bash
-bun lint
-bun db:generate  # Often forgotten
-bun typecheck
-bun test:run
-bun build
+<!-- Wrong (v3 API) -->
+<USelect :options="options" v-model="selected" />
 ```
 
-### "Git hooks not running"
+### UModal content not rendering
 
-```bash
-bun prepare  # Install simple-git-hooks
+Use named slots:
+```vue
+<UModal>
+  <template #body>Content</template>
+  <template #footer>Actions</template>
+</UModal>
 ```
 
 ---
 
-## Testing
+## Build & Types
 
-### "Tests failing with Prisma errors"
+### TypeScript errors after schema change
 
-Mock Prisma modules:
-
-```typescript
-vi.mock('@prisma/client');
-vi.mock('@prisma/adapter-pg');
-vi.mock('pg');
+```bash
+bun run typecheck
 ```
 
-See `server/utils/db.test.ts` for example.
+If persists: restart TypeScript server in editor.
 
-### "Cannot find module" in tests
+### Build fails
 
-- Use relative imports (`./testDb`, not `~/server/utils/testDb`)
-- Check import depth
+Run full check sequence:
 
-### "Unique constraint failed" in tests
+```bash
+bun run lint
+bun run typecheck
+bun run test:run
+bun run build
+```
 
-- Fixtures use timestamp + random for uniqueness
-- Ensure transaction hooks in place (beforeEach/afterEach)
+### Git hooks not running
 
-### "Tests fail in specific order"
-
-- Not using transactions properly
-- Data created in `beforeAll` persists (use `beforeEach`)
+```bash
+bun run prepare  # Install simple-git-hooks
+```
 
 ---
 
 ## Development
 
-### "Bun command not found in scripts"
-
-Use from repo root, not subdirectories:
+### Commands must run from repo root
 
 ```bash
-cd /home/alois/bistro  # Go to root
-bun dev                # Then run command
+cd /home/alois/protocol
+bun run dev
 ```
 
-### "Runtime config not available"
+### .nuxt restart loop
 
-Add vars to `.env` (copy from .env.example) and restart dev server.
-
-### "Cannot find module '~~/server/...'"
-
-TypeScript path issue. Restart TypeScript server in editor.
-
-### "Type error in API handler"
-
-Add explicit return types:
-
+Vite watch config ignores .nuxt:
 ```typescript
-async function getProject(id: string): Promise<Project | null> {
-  // ...
-}
+// nuxt.config.ts
+vite: { server: { watch: { ignored: ['**/.nuxt/**'] } } }
 ```
 
----
+If loop persists: `rm -rf .nuxt && bun run dev`
 
-## Docker
+### Drag-and-drop not working
 
-### Local vs Docker DATABASE_URL
-
-- Local dev: `DATABASE_URL=postgresql://bistro:bistro@localhost:5432/bistro`
-- Docker prod: `DATABASE_URL=postgresql://bistro:bistro@postgres:5432/bistro`
-
-Note: hostname differs (`localhost` vs `postgres`).
-
-Use `.env` for local, `.env.docker` for production.
+Check `vue-draggable-plus` setup:
+- Ensure `v-model` bound to reactive array
+- Check `item-key` prop matches item ID field
+- Verify `@update:modelValue` handler calls `persistOrder()`
 
 ---
 
-## Quick Fixes Checklist
+## Quick Fixes
 
-| Symptom                | Fix                                    |
-| ---------------------- | -------------------------------------- |
-| Prisma types wrong     | `bun db:generate`                      |
-| DB connection failed   | `docker compose up -d`                 |
-| OAuth not working      | Check env vars, restart                |
-| Session stale          | Call `fetchSession()`                  |
-| CI fails locally works | Run `bun db:generate` before typecheck |
-| Hooks not running      | `bun prepare`                          |
-| Tests Prisma errors    | Mock Prisma modules                    |
-| Command not found      | Run from repo root                     |
+| Symptom | Fix |
+|---------|-----|
+| DB errors on server | Add `import.meta.server` guard |
+| Stale data after mutation | Call `loadX()` after DB write |
+| Component not found | Check `pathPrefix: false` in nuxt.config |
+| USelect empty | Use `:items` not `:options` |
+| Modal content missing | Use `#body`/`#footer` slots |
+| Types wrong | `bun run typecheck` + restart TS server |
+| Build fails | `rm -rf .nuxt && bun run build` |
 
 ---
 
-_See also: [Testing Infrastructure](../System/testing_infrastructure.md) for test-specific issues_
+_Last updated: 2026-02-11_
