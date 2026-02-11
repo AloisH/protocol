@@ -652,7 +652,7 @@ function onNotesInput(value: string) {
           </div>
 
           <!-- Per-activity notes -->
-          <div v-if="phase === 'active' && currentActivity" class="w-full max-w-xs">
+          <div v-if="phase === 'active' && currentActivity" class="w-full max-w-xs text-center">
             <button
               v-if="!showActivityNotes"
               type="button"
@@ -691,6 +691,7 @@ function onNotesInput(value: string) {
             <UButton
               size="xl"
               variant="outline"
+              block
               class="flex-1"
               @click="skip"
             >
