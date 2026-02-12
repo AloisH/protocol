@@ -397,6 +397,16 @@ function handleDoseToggle(doseIndex: number) {
   toggleDose(a.id, doseIndex);
 }
 
+// Activities with notes (for summary)
+const activitiesWithNotes = computed(() => {
+  return flatActivities.value
+    .filter(a => activityLogs.value.get(a.id)?.notes)
+    .map(a => ({
+      activity: a,
+      notes: activityLogs.value.get(a.id)!.notes!,
+    }));
+});
+
 // Primary button label
 const primaryLabel = computed(() => {
   const a = currentActivity.value;
@@ -481,6 +491,30 @@ function onNotesInput(value: string) {
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-clock" class="w-5 h-5 text-blue-400" />
             <span class="text-sm text-neutral-300">{{ formatElapsed(finalElapsed) }}</span>
+          </div>
+        </div>
+
+        <!-- Activity notes -->
+        <div v-if="activitiesWithNotes.length" class="w-full max-w-sm mx-auto mb-6">
+          <p class="text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
+            Notes
+          </p>
+          <div class="space-y-2">
+            <div
+              v-for="{ activity, notes } in activitiesWithNotes"
+              :key="activity.id"
+              class="flex items-start gap-2 text-sm"
+            >
+              <UIcon
+                :name="activityTypeIcons[activity.activityType] ?? 'i-lucide-circle'"
+                class="w-4 h-4 mt-0.5 flex-shrink-0"
+                :class="activityTypeColors[activity.activityType]"
+              />
+              <div class="min-w-0">
+                <span class="text-neutral-400">{{ activity.name }}:</span>
+                <span class="text-neutral-200 ml-1">{{ notes }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
