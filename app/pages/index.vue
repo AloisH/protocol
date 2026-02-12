@@ -106,7 +106,7 @@ const formattedDate = computed(() => {
           </p>
         </div>
         <div class="relative w-16 h-16">
-          <svg class="w-16 h-16 transform -rotate-90">
+          <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
             <circle
               cx="32"
               cy="32"
