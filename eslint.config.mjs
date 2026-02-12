@@ -36,6 +36,7 @@ export default antfu(
       // MDC content (not code)
       'content/**',
       // Files outside tsconfig (have own configs or rarely change)
+      'test/**',
       'e2e/**',
       'scripts/**',
       'prisma/seed.ts',
