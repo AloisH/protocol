@@ -60,7 +60,6 @@ useHead({
   ],
   link: [
     { rel: 'icon', href: '/favicon.ico' },
-    { rel: 'manifest', href: '/manifest.json' },
     { rel: 'apple-touch-icon', href: '/icon-192x192.png' },
   ],
   htmlAttrs: {

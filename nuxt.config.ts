@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     '@nuxtjs/sitemap',
     'nuxt-og-image',
-    // '@vite-pwa/nuxt', // TODO: Fix PWA service worker path resolution
+    '@vite-pwa/nuxt',
   ],
 
   // Auto-import components from nested feature directories
@@ -140,6 +140,7 @@ export default defineNuxtConfig({
         'frame-ancestors': ['\'none\''],
         'base-uri': ['\'self\''],
         'form-action': ['\'self\''],
+        'worker-src': ['\'self\''],
       },
       xFrameOptions: 'DENY',
       xContentTypeOptions: 'nosniff',
@@ -157,6 +158,31 @@ export default defineNuxtConfig({
     exclude: [],
   },
 
-  // PWA config commented out — re-enable with @vite-pwa/nuxt module
-  // pwa: { ... },
+  pwa: {
+    strategies: 'generateSW',
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Protocol',
+      short_name: 'Protocol',
+      description: 'Personal routine tracking PWA. Set up and monitor daily, weekly, monthly, or yearly protocols.',
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#000000',
+      theme_color: '#10b981',
+      scope: '/',
+      icons: [
+        { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+      screenshots: [
+        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      ],
+      categories: ['productivity', 'utilities'],
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,png,ico,svg,woff2}'],
+      navigateFallback: '/',
+    },
+  },
 });

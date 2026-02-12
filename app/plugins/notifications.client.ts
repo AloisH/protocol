@@ -52,6 +52,8 @@ export default defineNuxtPlugin(async () => {
   const completedIds = new Set(completions.map(c => c.protocolId));
   const incompleteCount = protocols.filter(p => p.id && !completedIds.has(p.id)).length;
 
+  updateBadge(incompleteCount);
+
   if (incompleteCount === 0)
     return;
 

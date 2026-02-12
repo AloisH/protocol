@@ -19,6 +19,7 @@ onMounted(async () => {
   isClient.value = true;
   await loadToday();
   await loadActivities();
+  updateBadge(progress.value.total - progress.value.completed);
   // Load streaks for all protocols
   for (const protocol of todaysProtocols.value) {
     streaks.value[protocol.id] = await getStreak(protocol.id);
@@ -42,11 +43,13 @@ function openSession(protocol: Protocol) {
 async function quickToggle(protocolId: string) {
   await toggleCompletion(protocolId);
   await loadToday();
+  updateBadge(progress.value.total - progress.value.completed);
   streaks.value[protocolId] = await getStreak(protocolId);
 }
 
 async function onSessionSaved() {
   await loadToday();
+  updateBadge(progress.value.total - progress.value.completed);
   // Update streaks
   for (const protocol of todaysProtocols.value) {
     streaks.value[protocol.id] = await getStreak(protocol.id);
