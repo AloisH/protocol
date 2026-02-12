@@ -33,7 +33,9 @@
   "dependencies": {
     "@iconify-json/lucide": "^1.2.82",
     "@iconify-json/simple-icons": "^1.2.63",
+    "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.3.0",
+    "@nuxtjs/sitemap": "^7.6.0",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vitejs/plugin-vue": "^6.0.3",
     "chart.js": "^4.5.1",
@@ -41,6 +43,7 @@
     "fuse.js": "^7.1.0",
     "nanoid": "^5.1.6",
     "nuxt": "^4.2.2",
+    "nuxt-og-image": "^5.1.13",
     "ua-parser-js": "^2.0.8",
     "vue-chartjs": "^5.3.3",
     "vue-draggable-plus": "^0.6.1",

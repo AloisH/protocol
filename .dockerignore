@@ -1,0 +1,15 @@
+node_modules/
+.nuxt/
+.output/
+.nitro/
+.cache/
+.git/
+.github/
+.agent/
+coverage/
+playwright-report/
+test-results/
+*.log
+.env*
+.DS_Store
+Thumbs.db
