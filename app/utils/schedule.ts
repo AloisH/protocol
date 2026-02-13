@@ -29,3 +29,34 @@ export function isScheduledOnDate(
       return false;
   }
 }
+
+/**
+ * Calculate current streak for a protocol given its completion dates.
+ * Walks backwards from today, counting consecutive scheduled days with completions.
+ */
+export function calculateStreak(
+  protocol: Pick<Protocol, 'duration' | 'scheduleDays'>,
+  completionDates: string[],
+): number {
+  if (completionDates.length === 0)
+    return 0;
+
+  const completedSet = new Set(completionDates);
+  const checkDate = new Date();
+  let streak = 0;
+
+  for (let i = 0; i < 365; i++) {
+    const dateStr = checkDate.toISOString().split('T')[0]!;
+    if (isScheduledOnDate(protocol, checkDate)) {
+      if (completedSet.has(dateStr)) {
+        streak++;
+      }
+      else {
+        break;
+      }
+    }
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  return streak;
+}

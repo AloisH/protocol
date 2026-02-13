@@ -1,5 +1,5 @@
 import { db } from '#shared/db/schema';
-import { isScheduledOnDate } from '~/utils/schedule';
+import { calculateStreak, isScheduledOnDate } from '~/utils/schedule';
 
 export interface ProtocolStats {
   protocolId: string;
@@ -186,26 +186,7 @@ export function useAnalytics() {
 
         const rate = expected > 0 ? Math.round((recentCompletions.length / expected) * 100) : 0;
 
-        // Calculate streak
-        const sorted = [...completions].sort((a, b) => b.date.localeCompare(a.date));
-        let streak = 0;
-        const checkDate = new Date();
-
-        if (protocol.duration === 'daily') {
-          for (const c of sorted) {
-            const expectedDate = checkDate.toISOString().split('T')[0]!;
-            if (c.date === expectedDate) {
-              streak++;
-              checkDate.setDate(checkDate.getDate() - 1);
-            }
-            else if (c.date < expectedDate) {
-              break;
-            }
-          }
-        }
-        else {
-          streak = sorted.length;
-        }
+        const streak = calculateStreak(protocol, completions.map(c => c.date));
 
         stats.push({
           protocolId: protocol.id,

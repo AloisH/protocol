@@ -1,7 +1,7 @@
 import type { DailyCompletion, Protocol } from '#shared/db/schema';
 import { db } from '#shared/db/schema';
 import { nanoid } from 'nanoid';
-import { isScheduledOnDate } from '~/utils/schedule';
+import { calculateStreak, isScheduledOnDate } from '~/utils/schedule';
 
 export function useDaily() {
   // Use useState for SSR-safe shared state
@@ -113,46 +113,12 @@ export function useDaily() {
     if (!protocol)
       return 0;
 
-    // Get all completions for this protocol, sorted by date desc
-    const allCompletions = await db.dailyCompletions
+    const completions = await db.dailyCompletions
       .where('protocolId')
       .equals(protocolId)
       .toArray();
 
-    if (allCompletions.length === 0)
-      return 0;
-
-    // Sort by date descending
-    const sorted = allCompletions.sort((a, b) => b.date.localeCompare(a.date));
-
-    let streak = 0;
-    const checkDate = new Date();
-
-    // For custom-day or daily protocols, check consecutive scheduled days
-    if (protocol.scheduleDays?.length || protocol.duration === 'daily') {
-      // Build a set of completed dates for fast lookup
-      const completedDates = new Set(sorted.map(c => c.date));
-
-      // Walk backwards through days, only checking scheduled ones
-      for (let i = 0; i < 365; i++) {
-        const dateStr = checkDate.toISOString().split('T')[0]!;
-        if (isScheduledOnDate(protocol, checkDate)) {
-          if (completedDates.has(dateStr)) {
-            streak++;
-          }
-          else {
-            break;
-          }
-        }
-        checkDate.setDate(checkDate.getDate() - 1);
-      }
-    }
-    else {
-      // For weekly/monthly, just count total completions
-      streak = sorted.length;
-    }
-
-    return streak;
+    return calculateStreak(protocol, completions.map(c => c.date));
   }
 
   // Get completion rate for last N days
