@@ -141,11 +141,11 @@ async function handleSubmit() {
             v-model="state.duration"
             :items="durationOptions"
             placeholder="Select frequency"
-            class="w-48"
+            class="w-full sm:w-48"
           />
         </UFormField>
 
-        <div v-if="state.duration === 'custom'" class="flex gap-1">
+        <div v-if="state.duration === 'custom'" class="flex flex-wrap gap-1.5">
           <UButton
             v-for="day in dayOptions"
             :key="day.key"

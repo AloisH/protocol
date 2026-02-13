@@ -70,17 +70,17 @@ onMounted(async () => {
           </p>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <USelect
             v-model="selectedProtocol"
             :items="protocolOptions"
             placeholder="Select protocol"
-            class="w-40"
+            class="w-full sm:w-40"
           />
           <USelect
             v-model="timeRange"
             :items="timeRangeOptions"
-            class="w-28"
+            class="w-full sm:w-28"
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ onMounted(async () => {
                 <span>{{ stat.streak }} day streak</span>
               </div>
             </div>
-            <div class="w-24 ml-4">
+            <div class="w-20 sm:w-24 ml-2 sm:ml-4">
               <div class="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                 <div
                   class="h-full bg-green-500 rounded-full transition-all"

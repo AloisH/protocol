@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-white dark:bg-neutral-950">
+  <div class="min-h-screen flex flex-col bg-white dark:bg-neutral-950 pb-[env(safe-area-inset-bottom)]">
     <!-- New Protocol header -->
     <AppHeader />
 

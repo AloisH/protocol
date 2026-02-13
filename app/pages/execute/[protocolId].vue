@@ -603,9 +603,9 @@ function onNotesInput(value: string) {
           <!-- Timer ring -->
           <div
             v-if="(currentActivity?.activityType === 'warmup' && currentActivity.duration) || phase === 'rest'"
-            class="relative w-56 h-56 flex items-center justify-center"
+            class="relative w-40 h-40 sm:w-56 sm:h-56 flex items-center justify-center"
           >
-            <svg class="w-56 h-56 transform -rotate-90" viewBox="0 0 200 200">
+            <svg class="w-40 h-40 sm:w-56 sm:h-56 transform -rotate-90" viewBox="0 0 200 200">
               <circle
                 cx="100" cy="100" :r="RADIUS"
                 stroke="currentColor" stroke-width="6" fill="none"
@@ -620,7 +620,7 @@ function onNotesInput(value: string) {
                 :stroke-dashoffset="strokeDashoffset"
               />
             </svg>
-            <span class="absolute text-6xl font-mono font-bold tabular-nums">
+            <span class="absolute text-4xl sm:text-6xl font-mono font-bold tabular-nums">
               {{ formatTime(timer.remaining.value) }}
             </span>
           </div>
@@ -649,7 +649,7 @@ function onNotesInput(value: string) {
               <span
                 v-for="s in totalSetsForCurrent"
                 :key="s"
-                class="w-3 h-3 rounded-full transition-colors"
+                class="w-3.5 h-3.5 rounded-full transition-colors"
                 :class="s < currentSet ? 'bg-green-400' : s === currentSet ? 'ring-2 ring-green-400 bg-transparent' : 'bg-neutral-700'"
               />
             </div>

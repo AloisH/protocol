@@ -79,7 +79,7 @@ const statusColor = computed(() => {
         </div>
       </div>
 
-      <div class="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div class="flex items-center gap-1 flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
         <UButton
           color="neutral"
           variant="ghost"
