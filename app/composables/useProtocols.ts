@@ -95,7 +95,24 @@ export function useProtocols() {
   async function deleteProtocol(id: string) {
     error.value = null;
     try {
-      await db.protocols.delete(id);
+      await db.transaction('rw', [db.protocols, db.activities, db.activityGroups, db.trackingLogs, db.dailyCompletions], async () => {
+        const activityIds = await db.activities
+          .where('protocolId')
+          .equals(id)
+          .primaryKeys();
+
+        if (activityIds.length > 0) {
+          await db.trackingLogs
+            .where('activityId')
+            .anyOf(activityIds)
+            .delete();
+        }
+
+        await db.activities.where('protocolId').equals(id).delete();
+        await db.activityGroups.where('protocolId').equals(id).delete();
+        await db.dailyCompletions.where('protocolId').equals(id).delete();
+        await db.protocols.delete(id);
+      });
       await loadProtocols();
     }
     catch (e) {

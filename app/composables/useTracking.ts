@@ -8,14 +8,14 @@ export function useTracking() {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  async function loadLogs(exerciseId?: string) {
+  async function loadLogs(activityId?: string) {
     loading.value = true;
     error.value = null;
     try {
-      if (exerciseId) {
+      if (activityId) {
         logs.value = await db.trackingLogs
-          .where('exerciseId')
-          .equals(exerciseId)
+          .where('activityId')
+          .equals(activityId)
           .toArray();
       }
       else {
@@ -34,7 +34,7 @@ export function useTracking() {
   }
 
   async function logExercise(
-    exerciseId: string,
+    activityId: string,
     date: Date,
     data: Partial<TrackingLog> = {},
   ) {
@@ -42,7 +42,7 @@ export function useTracking() {
     try {
       const log: TrackingLog = {
         id: nanoid(),
-        activityId: exerciseId,
+        activityId,
         date,
         completed: data.completed ?? false,
         setsDone: data.setsDone,
@@ -61,7 +61,7 @@ export function useTracking() {
       await db.trackingLogs.add(log);
 
       // Reload
-      await loadLogs(exerciseId);
+      await loadLogs(activityId);
       return log;
     }
     catch (e) {
@@ -88,7 +88,7 @@ export function useTracking() {
       await db.trackingLogs.update(id, updated);
 
       // Reload
-      await loadLogs(existing.exerciseId);
+      await loadLogs(existing.activityId);
       return updated;
     }
     catch (e) {
@@ -104,7 +104,7 @@ export function useTracking() {
       const log = await db.trackingLogs.get(id);
       await db.trackingLogs.delete(id);
       if (log) {
-        await loadLogs(log.exerciseId);
+        await loadLogs(log.activityId);
       }
     }
     catch (e) {
@@ -114,7 +114,7 @@ export function useTracking() {
     }
   }
 
-  async function getLogsForDate(exerciseId: string, date: Date) {
+  async function getLogsForDate(activityId: string, date: Date) {
     try {
       const dayStart = new Date(date);
       dayStart.setHours(0, 0, 0, 0);
@@ -122,8 +122,8 @@ export function useTracking() {
       dayEnd.setHours(23, 59, 59, 999);
 
       return await db.trackingLogs
-        .where('exerciseId')
-        .equals(exerciseId)
+        .where('activityId')
+        .equals(activityId)
         .filter(log => log.date >= dayStart && log.date <= dayEnd)
         .toArray();
     }
@@ -133,8 +133,8 @@ export function useTracking() {
     }
   }
 
-  async function getProgressByExercise(
-    exerciseId: string,
+  async function getProgressByActivity(
+    activityId: string,
     days: number = 30,
   ): Promise<TrackingLog[]> {
     try {
@@ -142,8 +142,8 @@ export function useTracking() {
       since.setDate(since.getDate() - days);
 
       return await db.trackingLogs
-        .where('exerciseId')
-        .equals(exerciseId)
+        .where('activityId')
+        .equals(activityId)
         .filter(log => log.date >= since)
         .toArray();
     }
@@ -178,6 +178,6 @@ export function useTracking() {
     updateLog,
     deleteLog,
     getLogsForDate,
-    getProgressByExercise,
+    getProgressByActivity,
   };
 }
