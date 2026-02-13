@@ -7,8 +7,8 @@ export interface Shortcut {
 export const shortcuts: Shortcut[] = [
   {
     keys: 'meta_p',
-    label: 'Open command palette',
-    category: 'modals',
+    label: 'Go to protocols',
+    category: 'navigation',
   },
   {
     keys: 'meta_k',
@@ -21,3 +21,32 @@ export const shortcuts: Shortcut[] = [
     category: 'modals',
   },
 ];
+
+export function useKeyboardShortcuts() {
+  const shortcutsHelpOpen = useState('shortcuts-help-open', () => false);
+  const router = useRouter();
+
+  function onKeydown(e: KeyboardEvent) {
+    const meta = e.metaKey || e.ctrlKey;
+    if (!meta)
+      return;
+
+    if (e.key === 'p') {
+      e.preventDefault();
+      void router.push('/protocols');
+    }
+    else if (e.key === 'k') {
+      e.preventDefault();
+      void router.push('/protocols');
+    }
+    else if (e.key === '/') {
+      e.preventDefault();
+      shortcutsHelpOpen.value = !shortcutsHelpOpen.value;
+    }
+  }
+
+  onMounted(() => window.addEventListener('keydown', onKeydown));
+  onUnmounted(() => window.removeEventListener('keydown', onKeydown));
+
+  return { shortcutsHelpOpen };
+}

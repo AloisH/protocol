@@ -62,32 +62,6 @@ export const ActivitySchema = z.discriminatedUnion('activityType', [
   }),
 ]);
 
-/** @deprecated Use ActivitySchema instead */
-export const RoutineSchema = z.object({
-  id: z.string().min(1, 'ID required'),
-  protocolId: z.string().min(1, 'Protocol ID required'),
-  name: z.string().min(1, 'Name required').max(100),
-  order: z.number().int().min(0),
-  frequency: z.union([
-    z.enum(['daily', 'weekly']),
-    z.array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])),
-  ]),
-  timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
-  notes: z.string().max(500).optional(),
-});
-
-/** @deprecated Use ActivitySchema instead */
-export const ExerciseSchema = z.object({
-  id: z.string().min(1, 'ID required'),
-  routineId: z.string().min(1, 'Routine ID required'),
-  name: z.string().min(1, 'Name required').max(100),
-  sets: z.number().int().positive().optional(),
-  reps: z.number().int().positive().optional(),
-  weight: z.number().positive().optional(),
-  equipmentType: z.string().max(50).optional(),
-  notes: z.string().max(500).optional(),
-});
-
 export const TrackingLogSchema = z.object({
   id: z.string().min(1, 'ID required'),
   activityId: z.string().min(1, 'Activity ID required'),
@@ -127,8 +101,3 @@ export type ActivityInput = z.infer<typeof ActivitySchema>;
 export type TrackingLogInput = z.infer<typeof TrackingLogSchema>;
 export type SettingsInput = z.infer<typeof SettingsSchema>;
 export type DailyCompletionInput = z.infer<typeof DailyCompletionSchema>;
-
-/** @deprecated Use ActivityInput instead */
-export type RoutineInput = z.infer<typeof RoutineSchema>;
-/** @deprecated Use ActivityInput instead */
-export type ExerciseInput = z.infer<typeof ExerciseSchema>;

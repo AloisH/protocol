@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Shortcut } from '../../composables/useKeyboardShortcuts';
 import { shortcuts } from '../../composables/useKeyboardShortcuts';
 
 const isOpen = defineModel<boolean>('open', { default: false });

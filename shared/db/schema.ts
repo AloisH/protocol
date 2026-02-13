@@ -55,29 +55,6 @@ export interface Activity {
   notes?: string;
 }
 
-/** @deprecated Use Activity instead */
-export interface Routine {
-  id: string;
-  protocolId: string;
-  name: string;
-  order: number;
-  frequency: 'daily' | 'weekly' | string[];
-  timeOfDay?: 'morning' | 'afternoon' | 'evening';
-  notes?: string;
-}
-
-/** @deprecated Use Activity instead */
-export interface Exercise {
-  id: string;
-  routineId: string;
-  name: string;
-  sets?: number;
-  reps?: number;
-  weight?: number;
-  equipmentType?: string;
-  notes?: string;
-}
-
 export interface TrackingLog {
   id: string;
   activityId: string;
@@ -91,8 +68,6 @@ export interface TrackingLog {
   difficultyFelt?: number;
   dosesCompleted?: boolean[];
   notes?: string;
-  /** @deprecated Use activityId instead */
-  exerciseId?: string;
 }
 
 export interface Settings {
@@ -116,8 +91,8 @@ export interface DailyCompletion {
 
 export class ProtocolDB extends Dexie {
   protocols!: Table<Protocol>;
-  routines!: Table<Routine>;
-  exercises!: Table<Exercise>;
+  routines!: Table<Record<string, unknown>>;
+  exercises!: Table<Record<string, unknown>>;
   activities!: Table<Activity>;
   activityGroups!: Table<ActivityGroup>;
   trackingLogs!: Table<TrackingLog>;
@@ -151,7 +126,7 @@ export class ProtocolDB extends Dexie {
       dailyCompletions: '++id, protocolId, date, [protocolId+date]',
     }).upgrade(async (tx) => {
       // Migrate routines to activities (raw table to handle legacy fields)
-      const routines = await tx.table<Routine>('routines').toArray();
+      const routines = await tx.table<{ id: string; protocolId: string; name: string; order: number }>('routines').toArray();
       const activityTable = tx.table('activities');
       for (const routine of routines) {
         await activityTable.add({
@@ -161,9 +136,9 @@ export class ProtocolDB extends Dexie {
       }
 
       // Migrate exercises to activities
-      const exercises = await tx.table<Exercise>('exercises').toArray();
+      const exercises = await tx.table<{ id: string; routineId: string; name: string; sets?: number; reps?: number; weight?: number; equipmentType?: string; notes?: string }>('exercises').toArray();
       for (const exercise of exercises) {
-        const routine = await tx.table<Routine>('routines').get(exercise.routineId);
+        const routine = await tx.table<{ id: string; protocolId: string }>('routines').get(exercise.routineId);
         if (routine) {
           await activityTable.add({
             id: exercise.id,

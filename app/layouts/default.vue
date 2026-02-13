@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Header is rendered via AppHeader component
+const { shortcutsHelpOpen } = useKeyboardShortcuts();
 </script>
 
 <template>
@@ -13,6 +13,9 @@
         <slot />
       </AppErrorBoundary>
     </main>
+
+    <!-- Keyboard Shortcuts Help -->
+    <DashboardShortcutsHelp v-model:open="shortcutsHelpOpen" />
 
     <!-- Footer -->
     <footer class="border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 mt-12">
