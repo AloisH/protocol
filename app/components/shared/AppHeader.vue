@@ -143,17 +143,13 @@ watch(() => route.path, () => {
 
           <USeparator class="my-2" />
 
-          <UButton
-            icon="i-lucide-moon"
+          <UColorModeButton
             variant="ghost"
             color="neutral"
             block
             class="justify-start"
             @click="closeMenu"
-          >
-            <span class="hidden dark:inline">Light mode</span>
-            <span class="inline dark:hidden">Dark mode</span>
-          </UButton>
+          />
 
           <NuxtLink
             to="/settings"
