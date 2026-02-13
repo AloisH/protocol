@@ -46,7 +46,7 @@
             </p>
             <ul class="space-y-2">
               <li><a href="https://github.com/AloisH/protocol" target="_blank" rel="noopener noreferrer" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">GitHub</a></li>
-              <li><a href="/docs" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Documentation</a></li>
+              <li><a href="https://github.com/AloisH/protocol#readme" target="_blank" rel="noopener noreferrer" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Documentation</a></li>
             </ul>
           </div>
 
@@ -56,8 +56,8 @@
               Legal
             </p>
             <ul class="space-y-2">
-              <li><a href="/" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Privacy</a></li>
-              <li><a href="/" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Terms</a></li>
+              <li><a href="/legal/privacy" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Privacy</a></li>
+              <li><a href="/legal/terms" class="text-sm text-neutral-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">Terms</a></li>
             </ul>
           </div>
         </div>
