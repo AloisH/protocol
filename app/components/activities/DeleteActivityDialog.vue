@@ -54,7 +54,7 @@ async function onConfirm() {
           v-if="activity"
           class="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900"
         >
-          <div class="flex-shrink-0 rounded-full bg-neutral-100 p-2 dark:bg-neutral-800">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center dark:bg-neutral-800">
             <UIcon
               :name="activityTypeIcons[activity.activityType] || 'i-lucide-circle'"
               class="h-4 w-4 text-neutral-600 dark:text-neutral-400"

@@ -351,6 +351,14 @@ async function handleSave() {
   }
 }
 
+async function handleSaveAndEdit() {
+  const ok = await saveSession();
+  if (ok) {
+    toast.add({ title: 'Session saved', color: 'success', icon: 'i-lucide-check' });
+    await navigateTo(`/protocols?edit=${protocolId}`);
+  }
+}
+
 function requestExit() {
   if (phase.value === 'active' || phase.value === 'rest') {
     showExitConfirm.value = true;
@@ -537,6 +545,15 @@ function onNotesInput(value: string) {
           <div class="mt-auto space-y-2">
             <UButton size="xl" block icon="i-lucide-save" @click="handleSave">
               Save
+            </UButton>
+            <UButton
+              size="xl"
+              variant="outline"
+              block
+              icon="i-lucide-pencil"
+              @click="handleSaveAndEdit"
+            >
+              Save & Edit
             </UButton>
             <UButton size="xl" variant="ghost" color="neutral" block @click="navigateTo('/')">
               Discard

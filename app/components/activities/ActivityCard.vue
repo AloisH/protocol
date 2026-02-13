@@ -73,7 +73,7 @@ const displayDetails = computed(() => {
 
 <template>
   <div class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-900">
-    <div class="flex-shrink-0 rounded-full p-2" :class="activityTypeColors[activity.activityType]">
+    <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center" :class="activityTypeColors[activity.activityType]">
       <UIcon :name="activityTypeIcons[activity.activityType]" class="h-5 w-5" />
     </div>
 

@@ -15,9 +15,17 @@ const selectedProtocol = ref<Protocol | null>(null);
 const isEditMode = ref(false);
 const expandedProtocols = ref<Set<string>>(new Set());
 
+const route = useRoute();
+
 onMounted(async () => {
   await loadProtocols();
   await loadActivities();
+
+  // Auto-expand protocol from ?edit= query param
+  const editId = route.query.edit as string | undefined;
+  if (editId) {
+    expandedProtocols.value = new Set([editId]);
+  }
 });
 
 function openCreateForm() {
