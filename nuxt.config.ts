@@ -160,7 +160,7 @@ export default defineNuxtConfig({
 
   pwa: {
     strategies: 'generateSW',
-    registerType: 'autoUpdate',
+    registerType: 'prompt',
     manifest: {
       name: 'Protocol',
       short_name: 'Protocol',
@@ -176,7 +176,8 @@ export default defineNuxtConfig({
         { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
       screenshots: [
-        { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/screenshots/wide.png', sizes: '2560x1440', type: 'image/png', form_factor: 'wide', label: 'Protocol dashboard on desktop' },
+        { src: '/screenshots/narrow.png', sizes: '780x1688', type: 'image/png', form_factor: 'narrow', label: 'Protocol dashboard on mobile' },
       ],
       categories: ['productivity', 'utilities'],
     },

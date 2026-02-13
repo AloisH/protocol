@@ -5,30 +5,38 @@ const siteUrl = config.public.appUrl || 'http://localhost:3000';
 const title = 'Protocol';
 const description = 'Personal routine tracking PWA. Set up and monitor daily, weekly, monthly, or yearly protocols.';
 
-// PWA Install Prompt
-const installPrompt = ref<any>(null);
-const showInstallPrompt = ref(false);
 const toast = useToast();
+const { $pwa } = useNuxtApp();
+const isOnline = useOnlineStatus();
 
-onMounted(() => {
-  // Handle install prompt
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    installPrompt.value = e;
-    showInstallPrompt.value = true;
-  });
+// SW update prompt
+watch(
+  () => $pwa?.needRefresh,
+  (needRefresh) => {
+    if (!needRefresh)
+      return;
+    toast.add({
+      title: 'Update available',
+      description: 'A new version is ready.',
+      icon: 'i-lucide-download',
+      duration: 0,
+      actions: [
+        {
+          label: 'Reload',
+          color: 'primary',
+          onClick: () => $pwa?.updateServiceWorker(true),
+        },
+      ],
+    });
+  },
+);
 
-  // Service worker registration handled by @vite-pwa/nuxt when enabled
-});
-
+// PWA Install Prompt
 async function installApp() {
-  if (!installPrompt.value)
+  if (!$pwa?.showInstallPrompt)
     return;
-
-  installPrompt.value.prompt();
-  const { outcome } = await installPrompt.value.userChoice;
-
-  if (outcome === 'accepted') {
+  const result = await $pwa.install();
+  if (result?.outcome === 'accepted') {
     toast.add({
       title: 'Installed',
       description: 'Protocol installed successfully',
@@ -36,9 +44,6 @@ async function installApp() {
       icon: 'i-lucide-check',
     });
   }
-
-  installPrompt.value = null;
-  showInstallPrompt.value = false;
 }
 
 // WebSite JSON-LD schema
@@ -60,7 +65,7 @@ useHead({
   ],
   link: [
     { rel: 'icon', href: '/favicon.ico' },
-    { rel: 'apple-touch-icon', href: '/icon-192x192.png' },
+    { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon-180x180.png' },
   ],
   htmlAttrs: {
     lang: 'en',
@@ -98,13 +103,23 @@ defineOgImageComponent('NuxtSeo', {
       Skip to content
     </a>
 
+    <!-- Offline Banner -->
+    <Transition name="slide">
+      <div
+        v-if="!isOnline"
+        class="bg-warning-500 text-warning-950 fixed top-0 right-0 left-0 z-50 px-4 py-1.5 text-center text-sm font-medium"
+      >
+        You're offline — changes saved locally
+      </div>
+    </Transition>
+
     <!-- Install Prompt Banner -->
     <Teleport to="body">
       <Transition name="slide">
-        <div v-if="showInstallPrompt" class="fixed bottom-0 left-0 right-0 bg-primary p-4 shadow-lg z-50">
-          <div class="max-w-2xl mx-auto flex items-center justify-between">
+        <div v-if="$pwa?.showInstallPrompt" class="bg-primary fixed bottom-0 left-0 right-0 z-50 p-4 shadow-lg">
+          <div class="mx-auto flex max-w-2xl items-center justify-between">
             <div>
-              <p class="text-white font-semibold">
+              <p class="font-semibold text-white">
                 Install Protocol
               </p>
               <p class="text-primary-50 text-sm">
@@ -112,7 +127,7 @@ defineOgImageComponent('NuxtSeo', {
               </p>
             </div>
             <div class="flex gap-2">
-              <UButton variant="ghost" color="neutral" @click="showInstallPrompt = false">
+              <UButton variant="ghost" color="neutral" @click="$pwa?.cancelInstall()">
                 Dismiss
               </UButton>
               <UButton color="neutral" @click="installApp">
