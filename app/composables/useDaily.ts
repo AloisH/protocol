@@ -10,15 +10,16 @@ export function useDaily() {
   const loading = useState<boolean>('daily-loading', () => false);
   const error = useState<string | null>('daily-error', () => null);
 
+  const { now } = useNow();
+
   // Get today's date in YYYY-MM-DD format
   const today = computed(() => {
-    const d = new Date();
-    return d.toISOString().split('T')[0]!;
+    return now.value.toISOString().split('T')[0]!;
   });
 
   // Check if protocol is scheduled for today
   function isScheduledToday(protocol: Protocol): boolean {
-    return isScheduledOnDate(protocol, new Date());
+    return isScheduledOnDate(protocol, now.value);
   }
 
   // Load today's protocols and completions
@@ -175,6 +176,9 @@ export function useDaily() {
       percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
     };
   });
+
+  // Auto-reload when date rolls over at midnight
+  watch(today, async () => loadToday());
 
   return {
     todaysProtocols: readonly(todaysProtocols),

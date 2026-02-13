@@ -73,8 +73,10 @@ function durationLabel(protocol: Protocol) {
   return protocol.duration;
 }
 
+const { now } = useNow();
+
 const formattedDate = computed(() => {
-  return new Date().toLocaleDateString('en-US', {
+  return now.value.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
