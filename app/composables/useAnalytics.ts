@@ -1,4 +1,5 @@
 import { db } from '#shared/db/schema';
+import { isScheduledOnDate } from '~/utils/schedule';
 
 export interface ProtocolStats {
   protocolId: string;
@@ -102,11 +103,10 @@ export function useAnalytics() {
         protocols = await db.protocols.where('status').equals('active').toArray();
       }
 
-      const dailyProtocols = protocols.filter(p => p.duration === 'daily');
-      const expectedDaily = dailyProtocols.length;
-
-      if (expectedDaily === 0)
+      if (protocols.length === 0)
         return [];
+
+      const protocolIds = new Set(protocols.map(p => p.id));
 
       // Get completions
       let completions;
@@ -124,24 +124,24 @@ export function useAnalytics() {
           .toArray();
       }
 
-      // Filter to daily protocols only for accurate rate
-      const dailyProtocolIds = new Set(dailyProtocols.map(p => p.id));
-      const dailyCompletions = completions.filter(c => dailyProtocolIds.has(c.protocolId));
+      // Filter to relevant protocols
+      const relevantCompletions = completions.filter(c => protocolIds.has(c.protocolId));
 
       // Group by date
       const byDate = new Map<string, number>();
-      for (const c of dailyCompletions) {
+      for (const c of relevantCompletions) {
         byDate.set(c.date, (byDate.get(c.date) ?? 0) + 1);
       }
 
-      // Generate trend points
+      // Generate trend points with per-day expected count
       const result: TrendPoint[] = [];
       for (let i = 0; i <= days; i++) {
         const d = new Date(startDate);
         d.setDate(d.getDate() + i);
         const dateStr = d.toISOString().split('T')[0]!;
+        const expected = protocols.filter(p => isScheduledOnDate(p, d)).length;
         const count = byDate.get(dateStr) ?? 0;
-        const rate = Math.round((count / expectedDaily) * 100);
+        const rate = expected > 0 ? Math.round((count / expected) * 100) : 0;
         result.push({ date: dateStr, rate: Math.min(rate, 100) });
       }
 

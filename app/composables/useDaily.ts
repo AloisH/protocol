@@ -1,6 +1,7 @@
 import type { DailyCompletion, Protocol } from '#shared/db/schema';
 import { db } from '#shared/db/schema';
 import { nanoid } from 'nanoid';
+import { isScheduledOnDate } from '~/utils/schedule';
 
 export function useDaily() {
   // Use useState for SSR-safe shared state
@@ -15,51 +16,9 @@ export function useDaily() {
     return d.toISOString().split('T')[0]!;
   });
 
-  // Get day of week (0 = Sunday, 6 = Saturday)
-  const dayOfWeek = computed(() => new Date().getDay());
-
-  // Get week of month (1-5)
-  const weekOfMonth = computed(() => {
-    const d = new Date();
-    return Math.ceil(d.getDate() / 7);
-  });
-
-  const dayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-
-  // Check if protocol is scheduled for today based on duration
+  // Check if protocol is scheduled for today
   function isScheduledToday(protocol: Protocol): boolean {
-    if (protocol.scheduleDays?.length) {
-      return protocol.scheduleDays.includes(dayMap[dayOfWeek.value]!);
-    }
-
-    switch (protocol.duration) {
-      case 'daily':
-        return true;
-      case 'weekly':
-        // Show weekly protocols on Monday (day 1)
-        return dayOfWeek.value === 1;
-      case 'monthly':
-        // Show monthly protocols on first Monday of month
-        return dayOfWeek.value === 1 && weekOfMonth.value === 1;
-      case 'yearly': {
-        // Show yearly protocols on first day of year
-        const d = new Date();
-        return d.getMonth() === 0 && d.getDate() === 1;
-      }
-      case 'custom':
-        // Custom without scheduleDays set — don't show
-        return false;
-      default:
-        return false;
-    }
-  }
-
-  // Check if a given date is a scheduled day for a custom-day protocol
-  function isScheduledDay(protocol: Protocol, date: Date): boolean {
-    if (protocol.scheduleDays?.length) {
-      return protocol.scheduleDays.includes(dayMap[date.getDay()]!);
-    }
-    return true; // non-custom protocols: every day counts
+    return isScheduledOnDate(protocol, new Date());
   }
 
   // Load today's protocols and completions
@@ -177,7 +136,7 @@ export function useDaily() {
       // Walk backwards through days, only checking scheduled ones
       for (let i = 0; i < 365; i++) {
         const dateStr = checkDate.toISOString().split('T')[0]!;
-        if (isScheduledDay(protocol, checkDate)) {
+        if (isScheduledOnDate(protocol, checkDate)) {
           if (completedDates.has(dateStr)) {
             streak++;
           }
@@ -221,7 +180,7 @@ export function useDaily() {
       for (let i = 0; i < days; i++) {
         const d = new Date(startDate);
         d.setDate(startDate.getDate() + i);
-        if (isScheduledDay(protocol, d)) {
+        if (isScheduledOnDate(protocol, d)) {
           scheduledCount++;
         }
       }
