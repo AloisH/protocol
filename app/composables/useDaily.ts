@@ -218,9 +218,9 @@ export function useDaily() {
     // For custom-day protocols, count scheduled days in period
     if (protocol.scheduleDays?.length) {
       let scheduledCount = 0;
-      const d = new Date();
       for (let i = 0; i < days; i++) {
-        d.setDate(d.getDate() - (i === 0 ? 0 : 1));
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
         if (isScheduledDay(protocol, d)) {
           scheduledCount++;
         }
