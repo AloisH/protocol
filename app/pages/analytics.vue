@@ -18,6 +18,7 @@ const protocolStats = ref<ProtocolStats[]>([]);
 const overallStats = ref({ totalCompletions: 0, avgRate: 0, bestStreak: 0 });
 
 const loading = ref(true);
+const error = ref<string | null>(null);
 
 const timeRangeOptions = [
   { label: '7 days', value: 7 },
@@ -32,6 +33,7 @@ const protocolOptions = computed(() => [
 
 async function loadData() {
   loading.value = true;
+  error.value = null;
   try {
     const [calendar, trend, stats, overall] = await Promise.all([
       getCalendarData(selectedProtocol.value, timeRange.value),
@@ -43,6 +45,9 @@ async function loadData() {
     trendData.value = trend;
     protocolStats.value = stats;
     overallStats.value = overall;
+  }
+  catch (e) {
+    error.value = `Failed to load analytics: ${String(e)}`;
   }
   finally {
     loading.value = false;
@@ -84,6 +89,8 @@ onMounted(async () => {
           />
         </div>
       </div>
+
+      <UAlert v-if="error" color="error" icon="i-lucide-alert-triangle" :description="error" title="Error" />
 
       <div v-if="loading" class="grid gap-4 md:grid-cols-3">
         <USkeleton class="h-24" />

@@ -6,7 +6,7 @@ useSeoMeta({
   description: 'Track your daily protocols and monitor progress.',
 });
 
-const { todaysProtocols, loading, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
+const { todaysProtocols, loading, error, progress, loadToday, isCompletedToday, toggleCompletion, getStreak } = useDaily();
 const { loadActivities } = useActivities();
 const streaks = ref<Record<string, number>>({});
 const isClient = ref(false);
@@ -133,6 +133,9 @@ const formattedDate = computed(() => {
         </div>
       </div>
     </UCard>
+
+    <!-- Error State -->
+    <UAlert v-if="error" color="error" icon="i-lucide-alert-triangle" :description="error" title="Error" />
 
     <!-- Loading State -->
     <div v-if="loading" class="space-y-4">

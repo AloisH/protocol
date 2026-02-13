@@ -9,7 +9,9 @@
 
     <!-- Main content -->
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-      <slot />
+      <AppErrorBoundary>
+        <slot />
+      </AppErrorBoundary>
     </main>
 
     <!-- Footer -->

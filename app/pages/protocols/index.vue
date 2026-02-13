@@ -6,7 +6,7 @@ useSeoMeta({
   description: 'Manage your personal routines and protocols',
 });
 
-const { protocols, loading, createProtocol, updateProtocol, deleteProtocol, loadProtocols } = useProtocols();
+const { protocols, loading, error, createProtocol, updateProtocol, deleteProtocol, loadProtocols } = useProtocols();
 const { activities, loadActivities } = useActivities();
 
 const formOpen = ref(false);
@@ -117,6 +117,9 @@ async function handleDeleteConfirm() {
         New Protocol
       </UButton>
     </div>
+
+    <!-- Error State -->
+    <UAlert v-if="error" color="error" icon="i-lucide-alert-triangle" :description="error" title="Error" />
 
     <!-- Loading State -->
     <div v-if="loading" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
