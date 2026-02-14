@@ -33,6 +33,13 @@ useSeoMeta({
           <ImportSection />
         </div>
       </section>
+
+      <section>
+        <h2 class="text-xl font-semibold mb-4 text-red-600 dark:text-red-400">
+          Danger Zone
+        </h2>
+        <ClearDataSection />
+      </section>
     </div>
   </UContainer>
 </template>
