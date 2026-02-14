@@ -72,6 +72,14 @@ const activityTypeColors: Record<string, string> = {
           </h4>
         </div>
 
+        <!-- Image -->
+        <img
+          v-if="activity.imageData"
+          :src="activity.imageData"
+          alt=""
+          class="mt-2 max-h-48 rounded-lg object-contain"
+        >
+
         <!-- Per-dose checkboxes -->
         <div v-if="hasDoses" class="mt-2 space-y-1.5">
           <button

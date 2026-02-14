@@ -600,6 +600,14 @@ function onNotesInput(value: string) {
             Rest
           </UBadge>
 
+          <!-- Activity image -->
+          <img
+            v-if="currentActivity?.imageData"
+            :src="currentActivity.imageData"
+            alt=""
+            class="max-h-64 sm:max-h-80 rounded-xl object-contain"
+          >
+
           <!-- Activity info -->
           <div v-if="currentActivity" class="text-center space-y-2">
             <div class="flex items-center justify-center gap-2">

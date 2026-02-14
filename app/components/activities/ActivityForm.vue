@@ -88,6 +88,55 @@ function removeImage() {
 const loading = ref(false);
 const validationError = ref<string | null>(null);
 
+function resizeImage(file: File, maxSize = 800, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+          else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onFileSelect(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file)
+    return;
+  try {
+    imageData.value = await resizeImage(file);
+  }
+  catch (e) {
+    validationError.value = String(e instanceof Error ? e.message : e);
+  }
+  if (fileInputRef.value)
+    fileInputRef.value.value = '';
+}
+
+function removeImage() {
+  imageData.value = undefined;
+}
+
 const activityTypeOptions = [
   { value: 'habit', label: 'Habit', icon: 'i-lucide-check-circle' },
   { value: 'exercise', label: 'Exercise', icon: 'i-lucide-dumbbell' },
