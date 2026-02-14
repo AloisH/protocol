@@ -30,6 +30,8 @@ const isOpen = computed({
 });
 
 const doses = ref<DoseState[]>([]);
+const imageData = ref<string | undefined>();
+const fileInputRef = ref<HTMLInputElement>();
 
 const state = reactive({
   name: '',
@@ -43,6 +45,45 @@ const state = reactive({
   duration: undefined as number | undefined,
   restTime: undefined as number | undefined,
 });
+
+function resizeImage(file: File, maxSize = 800, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let { width, height } = img;
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        }
+        else {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function onFileSelect(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file)
+    return;
+  imageData.value = await resizeImage(file);
+  if (fileInputRef.value)
+    fileInputRef.value.value = '';
+}
+
+function removeImage() {
+  imageData.value = undefined;
+}
 
 const loading = ref(false);
 const validationError = ref<string | null>(null);
@@ -90,6 +131,7 @@ watch(
       state.equipmentType = activity.equipmentType;
       state.duration = activity.duration;
       state.restTime = activity.restTime;
+      imageData.value = activity.imageData;
       doses.value = activity.doses?.length
         ? activity.doses.map(d => ({ ...d }))
         : [{}];
@@ -112,6 +154,7 @@ function resetForm() {
   state.duration = undefined;
   state.restTime = undefined;
   doses.value = [{}];
+  imageData.value = undefined;
   validationError.value = null;
 }
 
@@ -121,6 +164,7 @@ function getFormData() {
     activityType: state.activityType,
     timeOfDay: state.timeOfDay,
     notes: state.notes,
+    imageData: imageData.value,
   };
 
   if (state.activityType === 'exercise') {
@@ -366,6 +410,41 @@ async function onSubmit() {
             </div>
           </div>
         </Transition>
+
+        <!-- Image -->
+        <UFormField label="Image">
+          <div class="flex items-center gap-3">
+            <div v-if="imageData" class="relative">
+              <img :src="imageData" alt="Activity image" class="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700">
+              <UButton
+                icon="i-lucide-x"
+                size="xs"
+                color="error"
+                variant="solid"
+                class="absolute -top-2 -right-2 rounded-full"
+                @click="removeImage"
+              />
+            </div>
+            <label class="hidden">
+              <span>Upload image</span>
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                @change="onFileSelect"
+              >
+            </label>
+            <UButton
+              icon="i-lucide-camera"
+              variant="outline"
+              color="neutral"
+              @click="fileInputRef?.click()"
+            >
+              {{ imageData ? 'Change' : 'Add photo' }}
+            </UButton>
+          </div>
+        </UFormField>
 
         <!-- Notes -->
         <UFormField label="Notes">

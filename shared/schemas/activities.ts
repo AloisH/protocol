@@ -12,6 +12,7 @@ const baseFormSchema = z.object({
   activityType: z.enum(['warmup', 'exercise', 'supplement', 'habit']),
   timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
   notes: z.string().max(500).optional(),
+  imageData: z.string().optional(),
 });
 
 export const ActivityFormSchema = z.discriminatedUnion('activityType', [

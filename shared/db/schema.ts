@@ -53,6 +53,9 @@ export interface Activity {
   restTime?: number; // seconds
 
   notes?: string;
+
+  // Image (base64 data URL)
+  imageData?: string;
 }
 
 export interface TrackingLog {
@@ -173,7 +176,7 @@ export class ProtocolDB extends Dexie {
       settings: '++userId',
       dailyCompletions: '++id, protocolId, date, [protocolId+date]',
     });
-    this.version(5).stores({
+    this.version(6).stores({
       protocols: '++id, status, createdAt',
       routines: '++id, protocolId, order',
       exercises: '++id, routineId',

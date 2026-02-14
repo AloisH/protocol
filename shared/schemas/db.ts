@@ -35,6 +35,7 @@ const baseActivitySchema = z.object({
   order: z.number().int().min(0),
   timeOfDay: z.enum(['morning', 'afternoon', 'evening']).optional(),
   notes: z.string().max(500).optional(),
+  imageData: z.string().optional(),
 });
 
 export const ActivitySchema = z.discriminatedUnion('activityType', [

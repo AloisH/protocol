@@ -96,6 +96,13 @@ const displayDetails = computed(() => {
       </p>
     </div>
 
+    <img
+      v-if="activity.imageData"
+      :src="activity.imageData"
+      alt=""
+      class="flex-shrink-0 h-10 w-10 rounded-lg object-cover"
+    >
+
     <div class="flex-shrink-0 flex gap-2">
       <UButton
         icon="i-lucide-edit"
