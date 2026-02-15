@@ -370,6 +370,7 @@ function requestExit() {
 
 function confirmExit() {
   showExitConfirm.value = false;
+  phase.value = 'loading';
   navigateTo('/');
 }
 
